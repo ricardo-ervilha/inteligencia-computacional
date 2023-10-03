@@ -71,35 +71,6 @@ void read_input(string path)
             nos[i].score = stoi(v[2]); //score do hotel i
         }
 
-
-        //---------------------------------Testando-----------------------------------------
-        cout << "Numero de vertices: " << numVertices << endl;
-        cout << "Numero de hoteisExtras: " << numExtraHotels << endl;
-        cout << "Numero de trips: " << numTrips << endl; 
-
-        cout << "Valores de tamanho de cada trip: " << endl;
-        for(int i = 0; i < numTrips; i++){
-            cout << tds[i] << " "; //Tamanho de cada trip
-        }
-        cout << endl;
-
-        cout << "Hoteis:" << endl;
-        for(int i = 0; i < numExtraHotels+2; i++){
-            cout << 
-            hoteis[i].x << " " <<//coordenada x do hotel i
-            hoteis[i].y << " " <<//coordenada y do hotel i
-            hoteis[i].score << endl; //score do hotel i (problema implica ser zero)
-        } 
-
-        cout << "Nos: " << endl;
-        //Testando as estruturas
-        for(int i = 0; i < numVertices-2; i++){
-            cout << 
-            nos[i].x << " " <<//coordenada x do hotel i
-            nos[i].y << " " <<//coordenada y do hotel i
-            nos[i].score << endl; //score do hotel i (problema implica ser zero)
-        } 
-
     }
 }
 
