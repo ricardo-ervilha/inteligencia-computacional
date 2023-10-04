@@ -25,4 +25,8 @@ void create_distance_matrix(float **d_matrix, uint size, Node *vertex){
     }
 }
 
+void print_node(Node node){
+    std::cout << "("<<node.x<<" , "<<node.y<<") \t\t "<<node.score<<std::endl;
+}
+
 #endif // NO_H
