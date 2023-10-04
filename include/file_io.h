@@ -53,14 +53,15 @@ void read_input(string path)
 
         Node *hoteis = new Node[numExtraHotels + 2];
 
-        for(int i = 0; i < numExtraHotels+2; i++){
+        for(int i = 0; i < numExtraHotels + 2; i++){
             //Computa tanto os hoteis de início e fim quanto os hoteis extras
             getline(file,line);
             v = separa_linha(line);
             hoteis[i].x = stof(v[0]); //coordenada x do hotel i
             hoteis[i].y = stof(v[1]); //coordenada y do hotel i
             hoteis[i].score = stoi(v[2]); //score do hotel i (problema implica ser zero)
-        } 
+            // print_node(hoteis[i]);
+        }
 
         Node *nos = new Node[numVertices - 2];
         for(int i = 0; i < numVertices-2; i++){
@@ -69,6 +70,7 @@ void read_input(string path)
             nos[i].x = stof(v[0]); //coordenada x do no i
             nos[i].y = stof(v[1]); //coordenada y do no i
             nos[i].score = stoi(v[2]); //score do hotel i
+            // print_node(nos[i]);
         }
 
     }
