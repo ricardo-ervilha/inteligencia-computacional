@@ -6,7 +6,7 @@
 #include <cstring>
 #include <vector>
 #include <sstream>
-#include "Node.h"
+#include "OPHS.h"
 
 using namespace std;
 
@@ -23,7 +23,7 @@ vector<string> separa_linha(string line){
     return v;
 } 
 
-void read_input(string path)
+OPHS* read_input(string path)
 {
     ifstream file(path);
 
@@ -31,6 +31,9 @@ void read_input(string path)
     int numVertices, numExtraHotels, numTrips;
     int tMax;
     vector<string> v;
+
+    OPHS* data;
+
     if(file.is_open()){
 
         getline(file, line);
@@ -60,7 +63,6 @@ void read_input(string path)
             hoteis[i].x = stof(v[0]); //coordenada x do hotel i
             hoteis[i].y = stof(v[1]); //coordenada y do hotel i
             hoteis[i].score = stoi(v[2]); //score do hotel i (problema implica ser zero)
-            // print_node(hoteis[i]);
         }
 
         Node *nos = new Node[numVertices - 2];
@@ -70,10 +72,12 @@ void read_input(string path)
             nos[i].x = stof(v[0]); //coordenada x do no i
             nos[i].y = stof(v[1]); //coordenada y do no i
             nos[i].score = stoi(v[2]); //score do hotel i
-            // print_node(nos[i]);
         }
 
+        data = new OPHS(numVertices, numExtraHotels, numTrips, tMax, tds, hoteis, nos);
     }
+
+    return data;
 }
 
 #endif

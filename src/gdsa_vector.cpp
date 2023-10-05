@@ -21,26 +21,26 @@ GdsaVector<STRU>::~GdsaVector() {
 }
 
 template <typename STRU>
-void GdsaVector<STRU>::endAdd(const STRU& stru) {
+void GdsaVector<STRU>::pushBack(const STRU& stru) {
     if (len == size) {
         size *= 2;
         STRU* newItems = new STRU[size];
         for (int i = 0; i < len; i++) {
-            newItems[i] = items[i];
+            newItems[i] = std::move( items[i] );
         }
+        std::swap( items, newItems );
         delete[] items;
-        items = newItems;
     }
     items[len++] = stru;
 }
 
 template <typename STRU>
-STRU GdsaVector<STRU>::endPop() {
+STRU GdsaVector<STRU>::popBack() {
     return items[--len];
 }
 
 template <typename STRU>
-STRU GdsaVector<STRU>::pop(int p) {
+STRU GdsaVector<STRU>::erase(int p) {
     STRU ret = items[p];
     len--;
     for (int i = p; i < len; i++) {
@@ -50,7 +50,7 @@ STRU GdsaVector<STRU>::pop(int p) {
 }
 
 template <typename STRU>
-void GdsaVector<STRU>::add(int p, const STRU& stru) {
+void GdsaVector<STRU>::insert(int p, const STRU& stru) {
     if (len == size) {
         size *= 2;
         STRU* newItems = new STRU[size];
@@ -71,3 +71,30 @@ void GdsaVector<STRU>::add(int p, const STRU& stru) {
     }
     len++;
 }
+
+
+template <typename STRU>
+STRU GdsaVector<STRU>::front() {
+    if (len <= 0) {
+        throw std::out_of_range("Vector is empty");
+    }
+    return items[0];
+}
+
+template <typename STRU>
+STRU GdsaVector<STRU>::back() {
+    if (len <= 0) {
+        throw std::out_of_range("Vector is empty");
+    }
+    return items[len - 1];
+}
+
+// template <typename STRU>
+// std::ostream& operator<<(std::ostream& os, const GdsaVector<STRU>& vec) {
+//     os << "[ ";
+//     for (int i = 0; i < vec.length(); ++i) {
+//         os << vec[i] << " ";
+//     }
+//     os << "]";
+//     return os;
+// }
