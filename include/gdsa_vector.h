@@ -34,11 +34,11 @@ public:
     STRU back();
 
     STRU& operator[](int index) {
-    if (index < 0 || index >= len) {
-        throw std::out_of_range("Index out of bounds");
+        if (index < 0 || index >= len) {
+            throw std::out_of_range("Index out of bounds");
+        }
+        return items[index];
     }
-    return items[index];
-}
 
 private:
     int len;

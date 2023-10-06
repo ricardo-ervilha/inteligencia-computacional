@@ -9,6 +9,8 @@ typedef struct{
     float x;
     float y;
     int score;
+    bool vis;
+    uint id;
 } Node;
 
 void create_distance_matrix(float **d_matrix, uint size, Node *vertex){

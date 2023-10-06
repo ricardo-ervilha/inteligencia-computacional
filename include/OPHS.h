@@ -2,6 +2,7 @@
 #define OPHS_H
 
 #include "Node.h"
+#include "trip.h"
 
 //Classe para condensar todos os dados do problema
 
@@ -11,23 +12,20 @@ private:
     int numExtraHotels;
     int numTrips;
     float totalTourLength;
-    float* tds; //trip length for each trip d
-    Node *hotels;
+    Trip **tour;
     Node *vertex;
+    float **d_matrix;
 public:
-    OPHS(int numVertices, int numExtraHotels, int numTrips, float totalTourLength, float *tds, Node* hotels, Node* vertex){
+    OPHS(int numVertices, int numExtraHotels, int numTrips, float totalTourLength, Node* vertex, float **d_matrix){
         this->numVertices = numVertices;
         this->numExtraHotels = numExtraHotels;
-        this->numTrips;
+        this->numTrips = numTrips;
         this->totalTourLength = totalTourLength;
-        this->tds = tds;
-        this->hotels = hotels;
         this->vertex = vertex;
+        this->d_matrix = d_matrix;
     };
 
     ~OPHS(){
-        delete [] tds;
-        delete [] hotels;
         delete [] vertex;
     };
 
@@ -36,7 +34,8 @@ public:
     int getNumTrips()        {return this->numTrips;};
     float getTotalLength()   {return this->totalTourLength;};
     Node* getVertex()        {return this->vertex;};
-    Node* getHotels()        {return this->hotels;};
+    float getDistance(int i, int j) {return this->d_matrix[i][j];};
+    Trip** getTrips()     {return this->tour;};
 };
 
 #endif

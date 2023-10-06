@@ -88,13 +88,3 @@ STRU GdsaVector<STRU>::back() {
     }
     return items[len - 1];
 }
-
-// template <typename STRU>
-// std::ostream& operator<<(std::ostream& os, const GdsaVector<STRU>& vec) {
-//     os << "[ ";
-//     for (int i = 0; i < vec.length(); ++i) {
-//         os << vec[i] << " ";
-//     }
-//     os << "]";
-//     return os;
-// }
