@@ -46,6 +46,7 @@ Trip** greedy_algorithm(OPHS *data){
             cout << "Fim Erro em GenerateCandidateList\n"; //Erro linha 46 (!!!)
 
             int length = std::distance(cl.begin(), cl.end());
+            cout <<"Dist: "<<length<<endl;
             if(length == 0) //Ninguém mais pode ser adicionado na trip
                 break;
             
@@ -54,6 +55,9 @@ Trip** greedy_algorithm(OPHS *data){
             std::get<0>(vai_entrar)->vis = true;
             data->getTrips()[cont]->updateCurrentLength(std::get<2>(vai_entrar));
             data->getTrips()[cont]->add(std::get<0>(vai_entrar));
+
+            if(length == 1) //Ninguém mais pode ser adicionado na trip
+                break;
         }
 
         cont++;

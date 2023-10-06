@@ -70,7 +70,10 @@ OPHS* read_input(string path)
             nos[i].vis = false;
         }
 
-        trips[0]->add(&nos[0]); //Adiciona na primeira trip o hotel de início(H0)
+        //Inicializar hotel de cada trip - pensar numa melhor estrategia
+        for(int i = 0; i < numTrips; i++){
+            trips[i]->add(&nos[0]); //Adiciona na primeira trip o hotel de início(H0)
+        }
 
         for(int i = numExtraHotels + 2; i < numExtraHotels + numVertices; i++){
             getline(file, line);
@@ -89,7 +92,7 @@ OPHS* read_input(string path)
             d_matrix[i] = new float[numVertices + numExtraHotels];
         
         create_distance_matrix(d_matrix, numVertices + numExtraHotels, nos);
-        data = new OPHS(numVertices, numExtraHotels, numTrips, tMax, nos, d_matrix);
+        data = new OPHS(numVertices, numExtraHotels, numTrips, tMax, nos, d_matrix, trips);
     }
 
     return data;

@@ -16,13 +16,14 @@ private:
     Node *vertex;
     float **d_matrix;
 public:
-    OPHS(int numVertices, int numExtraHotels, int numTrips, float totalTourLength, Node* vertex, float **d_matrix){
+    OPHS(int numVertices, int numExtraHotels, int numTrips, float totalTourLength, Node* vertex, float **d_matrix, Trip **tour){
         this->numVertices = numVertices;
         this->numExtraHotels = numExtraHotels;
         this->numTrips = numTrips;
         this->totalTourLength = totalTourLength;
         this->vertex = vertex;
         this->d_matrix = d_matrix;
+        this->tour = tour;
     };
 
     ~OPHS(){
