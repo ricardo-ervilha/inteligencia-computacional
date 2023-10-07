@@ -70,10 +70,8 @@ OPHS* read_input(string path)
             nos[i].vis = false;
         }
 
-        //Inicializar hotel de cada trip - pensar numa melhor estrategia
-        for(int i = 0; i < numTrips; i++){
-            trips[i]->add(&nos[0]); //Adiciona na primeira trip o hotel de início(H0)
-        }
+        nos[0].vis = true;
+        trips[0]->add(&nos[0]); //Adiciona na primeira trip o hotel de início(H0)
 
         for(int i = numExtraHotels + 2; i < numExtraHotels + numVertices; i++){
             getline(file, line);
