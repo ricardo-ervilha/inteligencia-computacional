@@ -1,37 +1,61 @@
 #ifndef TRIP_H
 #define TRIP_h
 
-#include <forward_list>
+#include <vector>
 
-using namespace std;
+typedef unsigned int uint;
 
-class Trip{
-    private:
-        std::vector<Node*> nodes;
-        float td;
-        float currentLength;
-    public:
-        Trip(float td)         {this->td = td; this->currentLength = 0 ;};
-        ~Trip()     {};
-        float getTd()          {return this->td;};
-        float getCurrentLength() {return this->currentLength;};
-        std::vector<Node*> getNodes()       {return this->nodes;};
-        void add(Node *no)     {nodes.push_back(no);};
-        Node* front()          {return nodes.front();};
-        Node* back()           {
-            return nodes.back();
-        };
-        void print(){
-            
-            cout << "Dados da trip" << endl;
-            cout << "Tamanho total: " << td << endl;
-            cout << "Tamanho atual: " << currentLength << endl;
-            for (int i = 0; i < nodes.size(); i++){
-                cout <<"Nó da trip: "<< nodes[i]->id << " Score: " << nodes[i]->score << endl;
-            }
-            cout << "-------------------------------------------------------------\n";
-        };
-        void updateCurrentLength(float val) {this->currentLength += val;};
+class Trip
+{
+private:
+    uint id;                   // Índice da trip
+    std::vector<Node> nodes; // Nós que pertencem a trip
+    int h0, h1;
+    float td;                  // Tamanho máximo da trip
+    float currentLength;       // Quanto está ocupado atualmente
+public:
+    Trip(float td)
+    {
+        this->td = td;
+        this->currentLength = 0;
+    };
+    void setStartHotel(int h0)    {this->h0 = h0;};
+    void setEndHotel(int h1)      {this->h1 = h1;};
+    ~Trip(){};
+    float getTd() { return this->td; };
+    float getCurrentLength() { return this->currentLength; };
+    uint getId() { return this->id; };
+    std::vector<Node> getNodes() { return this->nodes; };
+    Node getNode(int i) { return this->nodes[i]; };
+    void add(Node no) { nodes.push_back(no); };
+    Node front() { return nodes.front(); };
+    Node back() { return nodes.back(); };
+    void dadosTrip(){
+        std::cout << "Tamanho total: " << this->td << std::endl;
+        std::cout << "Tamanho atual: " << this->currentLength << std::endl;
+    }
+    void dadosNodes()
+    {
+        for (int i = 0; i < nodes.size(); i++)
+        {
+            std::cout << "Id do nó: "<< nodes[i].id;
+            std::cout << " X do nó: " << nodes[i].x << " Y do nó: " << nodes[i].y << " Score: " << nodes[i].score << std::endl;
+        }
+        std::cout << "-------------------------------------------------------------\n";
+    };
+    void updateCurrentLength(float val1, float val2){
+        this->currentLength += val1 + val2;
+    };
+    void updateCurrentLength(float val) { this->currentLength += val; };
+    int getStartHotel() {return this->h0;};
+    int getEndHotel()   {return this->h1;};
+    int getScoreTrip() {
+        int totalScore = 0;
+        for(int i = 0; i < nodes.size(); i++){
+            totalScore += nodes[i].score;
+        }
+        return totalScore;
+    }
 };
 
 #endif

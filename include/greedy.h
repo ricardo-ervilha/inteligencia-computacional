@@ -1,122 +1,109 @@
 #ifndef GREEDY_H
 #define GREEDY_H
 
+#include "OPHS.h"
+#include <set>
 #include <tuple>
-#include "../src/gdsa_vector.cpp"
+#include <algorithm>
 
-// bool feasible_solution(Trip **tour){
-//     return;
-// }
+typedef struct{
+    float beneficio;
+    int nodeToInsert;
+    int bestPlaceToInsert;
+} Candidate;
 
-bool compareCandidatos(std::tuple<Node*, float, float> a, std::tuple<Node*, float, float> b)
+bool compareCandidatos(std::tuple<int, float, float> a, std::tuple<int,float, float> b)
 {
     return std::get<1>(a) > std::get<1>(b);
 }
 
-std::forward_list<std::tuple<Node*, float, float>> generateCandidateList(OPHS *data, int cont, Node* last)
-{
-    std::forward_list<std::tuple<Node*, float, float>> candidatos;
-
-    //computo primeiro os dos hoteis
-    for(int i = 0; i < data->getNumExtraHotels() + 2; i++){
-        if(data->getVertex()[i].vis == false){
-            float distance = data->getDistance(data->getVertex()[i].id, last->id);
-            float beneficio = 0;
-            std::tuple<Node *, float, float> candidato = std::make_tuple(&data->getVertex()[i], beneficio, distance);
-            candidatos.push_front(candidato);
-        }
+void imprime_lista_candidatos(vector<tuple<int,float, float>> candidatos){
+    cout << "--------------Lista de Candidatos--------------\n";
+    for(int i = 0; i < candidatos.size(); i++){
+        cout << std::get<0>(candidatos[i]) << " " << std::get<1>(candidatos[i]) << " " << std::get<2>(candidatos[i]) << endl; 
     }
+}
 
-    //Computo depois os dos nós
+//ip -> in pre-processing
+vector<tuple<int,float, float>> generate_candidate_list_ip(OPHS* data, set<int> visiteds, Trip *trip){
+    vector<tuple<int,float, float>> candidatos;
+    int idAnterior;
+
+    if(trip->getNodes().empty())
+        idAnterior = trip->getStartHotel();
+    else
+        idAnterior = trip->getNodes().back().id;
+
+
     for(int i = data->getNumExtraHotels() + 2; i < data->getNumExtraHotels() + data->getNumVertices(); i++){
-        if(data->getVertex()[i].vis == false && data->getVertex()[i].id != 1){
-            if(data->getTrips()[cont]->getCurrentLength() + data->getDistance(data->getVertex()[i].id, last->id) < data->getTrips()[cont]->getTd()){
-                float distance = data->getDistance(data->getVertex()[i].id, last->id);
-                float beneficio = data->getVertex()[i].score / distance;
-                std::tuple<Node *, float, float> candidato = std::make_tuple(&data->getVertex()[i], beneficio, distance);
-                candidatos.push_front(candidato);
-            }
+        float incremento = data->getDistance(idAnterior, i);
+        float distanceToEndHotel = data->getDistance(i, trip->getEndHotel());
+        float updated_distance = trip->getCurrentLength() + incremento + distanceToEndHotel;
+        
+        //Nó não foi visitado e a distância dele até o hotel final é menor que Td.
+        if(visiteds.find(i) == visiteds.end() && updated_distance <= trip->getTd()){
+            float beneficio = data->getVertex(i).score / (data->getDistance(idAnterior, i) + data->getDistance(i, trip->getEndHotel()));
+            tuple<int, float, float> tupla = std::make_tuple(i, beneficio, incremento);
+            candidatos.push_back(tupla);
         }
     }
 
-    candidatos.sort(compareCandidatos);
+    std::sort(candidatos.begin(), candidatos.end(), compareCandidatos);
+
     return candidatos;
 }
 
-void print_lista_de_candidatos(std::forward_list<std::tuple<Node*, float, float>> candidatos){
-    for (std::forward_list<std::tuple<Node*, float, float>>::iterator it = candidatos.begin(); it != candidatos.end(); ++it){
-        cout << "Id do no: " << std::get<0>(*it)->id << " Beneficio: " << std::get<1>(*it) << " Distancia: " << std::get<2>(*it) << endl;
+//ap -> after pre-processing
+// vector<Candidate> generate_candidate_list_ap(OPHS *data, int idTrip){
+//     //Ideia é verificar todas as posições pra inserção.
+//     //Para cada vértice (Nó).
+//     for(int i = data->getNumExtraHotels() + 2; i <= data->getNumVertices() + data->getNumExtraHotels(); i++){
+//         //Para cada lugar para inserir (índice).
+//         for(int j = 1; j < data->getTrip(idTrip)->getNodes().size(); j++){
+//             //Retirar a aresta que existia e adicionar duas novas.
+//             float new_distance_to_verify = data->getTrip(idTrip)->getCurrentLength() - data->getDistance(j-1, j) + data->getDistance(i, j-1) + data->getDistance(i, j); 
+//         }
+//     }
+// }
+
+void pre_processing(OPHS *data){
+    set<int> visiteds;
+    Trip *trip = new Trip(data->getTrip(0)->getTd());
+    trip->setStartHotel(2);
+    trip->setEndHotel(2); 
+    
+    vector<tuple<int,float, float>> candidatos = generate_candidate_list_ip(data, visiteds, trip);
+    
+    while(!candidatos.empty()){
+        Node good_node = data->getVertex(std::get<0>(candidatos.front()));
+        
+        int idAnterior;
+        if(trip->getNodes().empty())
+            idAnterior = trip->getStartHotel();
+        else
+            idAnterior = trip->getNodes().back().id;
+        trip->updateCurrentLength(data->getDistance(idAnterior, std::get<0>(candidatos.front())));
+        
+        trip->add(good_node);
+
+        visiteds.insert(std::get<0>(candidatos.front()));
+        candidatos = generate_candidate_list_ip(data, visiteds, trip);
+        
     }
-    cout << "****************************************" << endl;
+    trip->updateCurrentLength(data->getDistance(trip->getNodes().back().id, trip->getEndHotel()));
+    trip->dadosTrip();
+    trip->dadosNodes();
+    cout << "Total score: " << trip->getScoreTrip() << endl;
 }
 
-Trip** greedy_algorithm(OPHS *data){
+// void constructive_algorithm(OPHS *data) {
 
-    int cont = 0;
+//     while(){
 
-    std::forward_list<std::tuple<Node*, float, float>> cl;
-     
-    while (cont < data->getNumTrips())
-    {
-        if(cont != 0){
-            //adiciono na próxima trip o hotel final da última
-            data->getTrips()[cont]->add(data->getTrips()[cont-1]->back());
-        }
+//     }
 
-        bool flag = false;
-        while(true){
 
-            float margin = data->getTrips()[cont]->getTd() - data->getTrips()[cont]->getCurrentLength();
+// }
 
-            int j;
-            for(int i = 0; i < data->getNumExtraHotels() + 2; i++){
-                if(data->getVertex()[i].vis == false){
-                    if(data->getTrips()[cont]->getCurrentLength() + data->getDistance(data->getVertex()[i].id, data->getTrips()[cont]->front()->id) > data->getTrips()[cont]->getTd()){
-                        j = i;
-                        flag = true;
-                        break;
-                    }
-                }
-            }
-
-            if(flag){
-                data->getTrips()[cont]->add(&data->getVertex()[j-1]);
-                break;
-            }
-
-            cout << "Trip de índice: " << cont << endl;
-            data->getTrips()[cont]->print();
-           
-            cl = generateCandidateList(data, cont, data->getTrips()[cont]->front()); //gera candidatos viaveis
-            
-            print_lista_de_candidatos(cl);
-
-            int length = std::distance(cl.begin(), cl.end());
-
-            if(length == 0) //Ninguém mais pode ser adicionado na trip
-                break;
-            
-            std::tuple<Node*, float, float> vai_entrar = cl.front();
-            cl.pop_front();
-            std::get<0>(vai_entrar)->vis = true;
-            data->getTrips()[cont]->updateCurrentLength(std::get<2>(vai_entrar));
-            data->getTrips()[cont]->add(std::get<0>(vai_entrar));
-
-            //Beneficio do no que vai entrar ser zero, significa que só tem hoteis para serem adicionados na solucao
-            if(std::get<1>(vai_entrar) == 0 && cont == data->getNumTrips() - 1){
-                data->getTrips()[data->getNumTrips() - 1]->add(&data->getVertex()[1]);
-                if(std::get<1>(vai_entrar) != 0) //hotel não precisa marcar como visitado
-                    data->getVertex()[1].vis = true; //Adiciona o nó final na trip final.
-            }
-            else if(std::get<1>(vai_entrar) == 0){
-                break; //Adicionou um hotel e acabou a trip
-            }
-        }
-
-        cont++;
-    }
-    
-    return data->getTrips();
-} 
 
 #endif

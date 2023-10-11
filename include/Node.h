@@ -2,15 +2,16 @@
 #define NO_H
 
 #include <cmath>
+#include <iostream>
 
 typedef unsigned int uint;
 
 typedef struct{
+    uint id; //Id do nó.
     float x;
     float y;
     int score;
     bool vis;
-    uint id;
 } Node;
 
 void create_distance_matrix(float **d_matrix, uint size, Node *vertex){
@@ -24,6 +25,15 @@ void create_distance_matrix(float **d_matrix, uint size, Node *vertex){
             else
                 d_matrix[i][j] = sqrt(pow(vertex[i].x - vertex[j].x, 2) + pow(vertex[i].y - vertex[j].y, 2));
         }
+    }
+}
+
+void print_distance_matrix(float **d_matrix, uint size){
+    for(int i = 0; i < size; i++){
+        for(int j = 0; j < size; j++){
+            std::cout << d_matrix[i][j] << " ";
+        }
+        std::cout << std::endl;
     }
 }
 

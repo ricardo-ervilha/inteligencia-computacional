@@ -11,8 +11,6 @@ set(CMAKE_CXX_STANDARD 17)
 target_sources(main PRIVATE
     include/Node.h
     include/file_io.h
-    include/gdsa_vector.h
-    src/gdsa_vector.cpp
 )
 
 # Inclua o diretório que contém os cabeçalhos da biblioteca

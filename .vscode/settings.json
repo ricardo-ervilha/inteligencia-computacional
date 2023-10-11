@@ -47,7 +47,8 @@
         "streambuf": "cpp",
         "typeinfo": "cpp",
         "sstream": "cpp",
-        "forward_list": "cpp"
+        "forward_list": "cpp",
+        "set": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
