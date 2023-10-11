@@ -5,6 +5,7 @@
 #include <set>
 #include <tuple>
 #include <algorithm>
+#include <chrono>
 
 typedef struct{
     float beneficio;
@@ -18,10 +19,12 @@ bool compareCandidatos(std::tuple<int, float, float> a, std::tuple<int,float, fl
 }
 
 void imprime_lista_candidatos(vector<tuple<int,float, float>> candidatos){
+    
     cout << "--------------Lista de Candidatos--------------\n";
     for(int i = 0; i < candidatos.size(); i++){
         cout << std::get<0>(candidatos[i]) << " " << std::get<1>(candidatos[i]) << " " << std::get<2>(candidatos[i]) << endl; 
     }
+    
 }
 
 //ip -> in pre-processing
@@ -36,6 +39,7 @@ vector<tuple<int,float, float>> generate_candidate_list_ip(OPHS* data, set<int> 
 
 
     for(int i = data->getNumExtraHotels() + 2; i < data->getNumExtraHotels() + data->getNumVertices(); i++){
+
         float incremento = data->getDistance(idAnterior, i);
         float distanceToEndHotel = data->getDistance(i, trip->getEndHotel());
         float updated_distance = trip->getCurrentLength() + incremento + distanceToEndHotel;
@@ -49,7 +53,7 @@ vector<tuple<int,float, float>> generate_candidate_list_ip(OPHS* data, set<int> 
     }
 
     std::sort(candidatos.begin(), candidatos.end(), compareCandidatos);
-
+    
     return candidatos;
 }
 
@@ -66,35 +70,74 @@ vector<tuple<int,float, float>> generate_candidate_list_ip(OPHS* data, set<int> 
 //     }
 // }
 
+//Ordem de complexidade O(H*H*D)
 void pre_processing(OPHS *data){
-    set<int> visiteds;
-    Trip *trip = new Trip(data->getTrip(0)->getTd());
-    trip->setStartHotel(2);
-    trip->setEndHotel(2); 
+    //i -> hotel_inicio, j -> hotel_final, k -> qual trip está sendo avaliado
+    int ***matrix_pre_processing = new int**[data->getNumExtraHotels() + 2];
     
-    vector<tuple<int,float, float>> candidatos = generate_candidate_list_ip(data, visiteds, trip);
-    
-    while(!candidatos.empty()){
-        Node good_node = data->getVertex(std::get<0>(candidatos.front()));
-        
-        int idAnterior;
-        if(trip->getNodes().empty())
-            idAnterior = trip->getStartHotel();
-        else
-            idAnterior = trip->getNodes().back().id;
-        trip->updateCurrentLength(data->getDistance(idAnterior, std::get<0>(candidatos.front())));
-        
-        trip->add(good_node);
-
-        visiteds.insert(std::get<0>(candidatos.front()));
-        candidatos = generate_candidate_list_ip(data, visiteds, trip);
-        
+    for (int i = 0; i < data->getNumExtraHotels() + 2; i++) {
+        matrix_pre_processing[i] = new int*[data->getNumExtraHotels() + 2];
+        for (int j = 0; j < data->getNumExtraHotels() + 2; j++) {
+            matrix_pre_processing[i][j] = new int[data->getNumTrips()];
+        }
     }
-    trip->updateCurrentLength(data->getDistance(trip->getNodes().back().id, trip->getEndHotel()));
-    trip->dadosTrip();
-    trip->dadosNodes();
-    cout << "Total score: " << trip->getScoreTrip() << endl;
+    
+    auto start = std::chrono::high_resolution_clock::now();
+    for(int k = 0; k < data->getNumTrips(); k++){
+        for(int i = 0; i < data->getNumExtraHotels() + 2; i++){
+            for(int j = 0; j < data->getNumExtraHotels() + 2; j++){
+                
+                set<int> visiteds;
+                Trip *trip = new Trip(data->getTrip(k)->getTd());
+                trip->setStartHotel(i);
+                trip->setEndHotel(j);
+                
+                vector<tuple<int, float, float>> candidatos = generate_candidate_list_ip(data, visiteds, trip);
+                
+                while (!candidatos.empty())
+                {
+                    Node good_node = data->getVertex(std::get<0>(candidatos.front()));
+
+                    int idAnterior;
+                    if (trip->getNodes().empty())
+                        idAnterior = trip->getStartHotel();
+                    else
+                        idAnterior = trip->getNodes().back().id;
+                    trip->updateCurrentLength(data->getDistance(idAnterior, std::get<0>(candidatos.front())));
+                    trip->add(good_node);
+                    visiteds.insert(std::get<0>(candidatos.front()));
+                    
+                    candidatos = generate_candidate_list_ip(data, visiteds, trip);
+                }
+                
+                if(trip->getNodes().size() != 0)
+                    trip->updateCurrentLength(data->getDistance(trip->getNodes().back().id, trip->getEndHotel()));
+                matrix_pre_processing[i][j][k] = trip->getScoreTrip(); //Salvo a pontuação total nessa matriz
+                
+            }
+        }
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Tempo decorrido: " << duration.count() << " ms" << std::endl;
+    for(int k = 0; k < data->getNumTrips(); k++){
+        cout << "Trip: " << k << endl;
+        for(int i = 0; i < data->getNumExtraHotels() + 2; i++){
+            for(int j = 0; j < data->getNumExtraHotels() + 2; j++){
+                cout << matrix_pre_processing[i][j][k] << " ";
+            }
+            cout << endl;
+        }
+        cout << endl;
+        cout << endl;
+    }    
+    
 }
+//Impressão dos dados
+// trip->dadosTrip();
+// trip->dadosNodes();
+// cout << "Total score: " << trip->getScoreTrip() << endl;
 
 // void constructive_algorithm(OPHS *data) {
 
