@@ -5,10 +5,10 @@
 using namespace std;
 
 int main(){
-    OPHS *data = read_input("../instances/OPHS_instances_February 2013/SET5 15-10/100-240-15-10.ophs");
+    OPHS *data = read_input("../instances/OPHS_instances_February 2013/SET1 3-4/66-130-3-4.ophs");
 
     
-    pre_processing(data);
+    constructive_algorithm(data);
 
     return 0;
 }

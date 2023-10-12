@@ -48,7 +48,10 @@
         "typeinfo": "cpp",
         "sstream": "cpp",
         "forward_list": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "chrono": "cpp",
+        "ctime": "cpp",
+        "ratio": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
