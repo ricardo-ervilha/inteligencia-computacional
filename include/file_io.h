@@ -7,21 +7,9 @@
 #include <vector>
 #include <sstream>
 #include "OPHS.h"
+#include "util.h"
 
 using namespace std;
-
-vector<string> separa_linha(string line){
-    vector<string> v;
-    string s;
-
-    stringstream ss(line);
-
-    while (getline(ss, s, '	')) {
-        v.push_back(s);
-    }
-
-    return v;
-} 
 
 OPHS* read_input(string path)
 {
