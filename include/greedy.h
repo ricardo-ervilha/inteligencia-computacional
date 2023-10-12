@@ -12,16 +12,16 @@ bool compareCandidatos(std::tuple<int, float, float> a, std::tuple<int,float, fl
     return std::get<1>(a) > std::get<1>(b);
 }
 
-bool anotherCompareCandidatos(std::tuple<int, int, float> a, std::tuple<int,int, float> b)
+bool anotherCompareCandidatos(std::tuple<int, int, float, float> a, std::tuple<int,int, float, float> b)
 {
     return std::get<2>(a) > std::get<2>(b);
 }
 
-void imprime_lista_candidatos(vector<tuple<int,int, float>> candidatos){
+void imprime_lista_candidatos(vector<tuple<int,int, float, float>> candidatos){
     
     cout << "--------------Lista de Candidatos--------------\n";
     for(int i = 0; i < candidatos.size(); i++){
-        cout << std::get<0>(candidatos[i]) << " " << std::get<1>(candidatos[i]) << " " << std::get<2>(candidatos[i]) << endl; 
+        cout << std::get<0>(candidatos[i]) << " " << std::get<1>(candidatos[i]) << " " << std::get<2>(candidatos[i]) << " " << std::get<3>(candidatos[i]) << endl; 
     }
     
 }
@@ -156,36 +156,6 @@ vector<tuple<int,float, float>> generate_candidate_list_ip(OPHS* data, set<int> 
     return candidatos;
 }
 
-//ap -> after pre-processing
-vector<tuple<int, int, float>> generate_candidate_list_ap(OPHS *data,set<int> visiteds, int idTrip, int lastInsert){
-    vector<tuple<int, int, float>> candidatos;
-    //Ideia é verificar todas as posições pra inserção.
-    //Para cada vértice (Nó).
-    for(int i = data->getNumExtraHotels() + 2; i <= data->getNumVertices() + data->getNumExtraHotels(); i++){
-        //Para cada lugar para inserir (índice). Depois do primeiro nó que é o hotel até ser inserido depois do último nó.
-        if(visiteds.find(i) == visiteds.end()){
-            for(int j = 1; j < data->getTrip(idTrip)->getNodes().size(); j++){
-                //Retirar a aresta que existia e adicionar duas novas.
-                float new_distance_to_verify = data->getTrip(idTrip)->getCurrentLength() - data->getDistance(j-1, j) + data->getDistance(i, j-1) + data->getDistance(i, j);
-                float distanceToEndHotel;
-                if(j != data->getTrip(idTrip)->getNodes().size() - 1)
-                    distanceToEndHotel += data->getDistance(data->getTrip(idTrip)->back().id, data->getTrip(idTrip)->getEndHotel());
-                else
-                    distanceToEndHotel += data->getDistance(j, data->getTrip(idTrip)->getEndHotel());
-                new_distance_to_verify += distanceToEndHotel;
-                if(new_distance_to_verify < data->getTrip(idTrip)->getTd()){
-                    float beneficio = data->getVertex(i).score / (-data->getDistance(j-1, j) + data->getDistance(i, j-1) + data->getDistance(i, j) + distanceToEndHotel);
-                    tuple<int, int, float> tupla = std::make_tuple(i,j, beneficio);
-                    candidatos.push_back(tupla);
-                } 
-            }
-        }
-    }
-
-    std::sort(candidatos.begin(), candidatos.end(), anotherCompareCandidatos);
-    imprime_lista_candidatos(candidatos);
-    return candidatos;
-}
 
 //Ordem de complexidade O(H*H*D)
 void pre_processing(OPHS *data){
@@ -250,7 +220,7 @@ void pre_processing(OPHS *data){
         cout << endl;
     }    
 
-    vector<int> hoteis = construct_initial_tour_forward(data, matrix_pre_processing);
+    vector<int> hoteis = construct_initial_tour_backward(data, matrix_pre_processing);
     data->getTrip(0)->setStartHotel(0);
     data->getTrip(0)->setEndHotel(hoteis[1]);
     int cont = 1;
@@ -260,6 +230,14 @@ void pre_processing(OPHS *data){
         data->getTrip(cont)->setEndHotel(hoteis[cont+2]);
         cont++;
     }
+
+    for (int i = 0; i < data->getNumExtraHotels() + 2; i++) {
+        for (int j = 0; j < data->getNumExtraHotels() + 2; j++) {
+            delete[] matrix_pre_processing[i][j];
+        }
+        delete[] matrix_pre_processing[i];
+    }
+    delete[] matrix_pre_processing;
     // construct_initial_tour_backward(data, matrix_pre_processing);
     
 }
@@ -268,33 +246,110 @@ void pre_processing(OPHS *data){
 // trip->dadosNodes();
 // cout << "Total score: " << trip->getScoreTrip() << endl;
 
+//ap -> after pre-processing
+vector<tuple<int, int, float, float>> generate_candidate_list_ap(OPHS *data, set<int> visiteds, int idTrip){
+    //Ideia é verificar todas as posições pra inserção.
+    
+    vector<tuple<int, int, float, float>> candidatos;
+    Trip* trip = data->getTrip(idTrip); //Trip de interesse no momento.
+    //Para cada vértice (Nó).
+    for(int i = data->getNumExtraHotels() + 2; i < data->getNumVertices() + data->getNumExtraHotels(); i++){
+        //Se Nó não foi visitado.  
+        if(visiteds.find(i) == visiteds.end()){
+            //Se trip for vazia
+            if(trip->getNodes().empty()){
+                float incremento = data->getDistance(i, trip->getStartHotel());
+                float distanceToEndHotel = data->getDistance(i, trip->getEndHotel());
+                float newDistance = incremento + distanceToEndHotel;
+                
+                if(newDistance <= trip->getTd()){
+                    float beneficio = data->getVertex(i).score / (incremento + distanceToEndHotel);
+                    tuple<int, int, float, float> candidato = std::make_tuple(i, 0, beneficio, incremento);
+                    candidatos.push_back(candidato);
+                }
+            }else{
+                //Quantidade de possibilidades para inserção é numero de nós + 1.
+                for(int j = 0; j < trip->getNodes().size() + 1; j++){
+                    int anterior, posterior;
+                    float incremento;
+                    if(j == 0){
+                        anterior = trip->getStartHotel();
+                        posterior = trip->getNodes().front().id;
+                        
+                        incremento =  data->getDistance(anterior, i) + data->getDistance(i, posterior);
+
+                    }else if(j == trip->getNodes().size()){
+                        anterior = trip->getNodes().back().id;
+                        posterior = trip->getEndHotel();
+                        
+                        incremento = data->getDistance(anterior, i) + data->getDistance(i, posterior);
+
+                    }else{
+                        anterior = trip->getNode(j-1).id;
+                        posterior = trip->getNode(j).id;
+                        
+                        incremento = -data->getDistance(anterior,posterior) + data->getDistance(anterior, i) + data->getDistance(i, posterior);
+
+                    }
+
+                    float distanceToEndHotel;
+                    if(j != trip->getNodes().size()){
+                        distanceToEndHotel = data->getDistance(trip->getNodes().back().id, trip->getEndHotel());
+                    }else{
+                        distanceToEndHotel = 0;
+                    }
+
+                    float newDistance = trip->getCurrentLength() + incremento + distanceToEndHotel;
+
+                    if(newDistance <= trip->getTd()){
+                        float beneficio = data->getVertex(i).score / (incremento + distanceToEndHotel) ;
+                        tuple<int, int, float, float> candidato = std::make_tuple(i, j, beneficio, incremento);
+                        candidatos.push_back(candidato);
+                    }
+                }
+            }
+        }
+
+
+    }
+
+    std::sort(candidatos.begin(), candidatos.end(), anotherCompareCandidatos);
+    imprime_lista_candidatos(candidatos);
+    
+    return candidatos;
+}
+
+
 void constructive_algorithm(OPHS *data) {
     pre_processing(data); //preenche o tour com os hoteis.
 
-    set<int> visiteds;
+    set<int> visiteds; //Lista de visitados global
     for(int i = 0; i < data->getNumTrips();i++){
-        vector<tuple<int, int, float>> candidatos = generate_candidate_list_ap(data, visiteds, i, data->getTrip(i)->getStartHotel());
+        
+        //Passo as trips inicializadas com hoteis, passo visiteds, passo idTrip como i e o último hotel inserido nesse inicio vai ser o hotel de inicio.
+        Trip *trip = data->getTrip(i);
+        vector<tuple<int, int, float, float>> candidatos = generate_candidate_list_ap(data, visiteds, i);
+        
         while(!candidatos.empty()){
             Node good_node = data->getVertex(std::get<0>(candidatos.front()));
-
-            int idAnterior;
-            if (data->getTrip(i)->getNodes().empty())
-                idAnterior = data->getTrip(i)->getStartHotel();
-            else
-                idAnterior = data->getTrip(i)->getNodes().back().id;
-            data->getTrip(i)->updateCurrentLength(-data->getDistance(std::get<1>(candidatos.front())-1, std::get<1>(candidatos.front())) + data->getDistance(std::get<0>(candidatos.front()), std::get<1>(candidatos.front())-1) + data->getDistance(std::get<0>(candidatos.front()), std::get<1>(candidatos.front())));
-            data->getTrip(i)->add(good_node);
+            cout << "Valor do length: " << trip->getCurrentLength() << endl;
+            trip->updateCurrentLength(std::get<3>(candidatos.front()));
+            trip->add(good_node, std::get<1>(candidatos.front()));
             visiteds.insert(std::get<0>(candidatos.front()));
+            candidatos = generate_candidate_list_ap(data, visiteds, i);
         }
-                
-        if(data->getTrip(i)->getNodes().size() != 0)
-            data->getTrip(i)->updateCurrentLength(data->getDistance(data->getTrip(i)->getNodes().back().id, data->getTrip(i)->getEndHotel()));
+        //Se a trip não está vazia (sem nós!!!!)      
+        // if(trip->getNodes().size() != 0)
+        //     trip->updateCurrentLength(data->getDistance(trip->getNodes().back().id, trip->getEndHotel()));
     }
     
     for(int i = 0; i < data->getNumTrips(); i++){
+        cout << data->getTrip(i)->getStartHotel() << " " << data->getTrip(i)->getEndHotel() << endl;
         data->getTrip(i)->dadosTrip();
         data->getTrip(i)->dadosNodes();
+        cout << "Score: " << data->getTrip(i)->getScoreTrip()<<endl;
     }
+    
 }
 
 

@@ -29,6 +29,9 @@ public:
 
     ~OPHS(){
         delete [] vertex;
+        for(int i = 0; i < getNumVertices() + getNumExtraHotels(); i++){
+            delete [] d_matrix[i];
+        }
     };
 
     int getNumVertices()     {return this->numVertices;};

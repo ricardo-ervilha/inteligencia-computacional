@@ -28,6 +28,7 @@ public:
     std::vector<Node> getNodes() { return this->nodes; };
     Node getNode(int i) { return this->nodes[i]; };
     void add(Node no) { nodes.push_back(no); };
+    void add(Node no, int pos) { nodes.insert(nodes.begin() + pos, no); };
     Node front() { return nodes.front(); };
     Node back() { return nodes.back(); };
     void dadosTrip(){
@@ -39,7 +40,7 @@ public:
         for (int i = 0; i < nodes.size(); i++)
         {
             std::cout << "Id do nó: "<< nodes[i].id;
-            std::cout << " X do nó: " << nodes[i].x << " Y do nó: " << nodes[i].y << " Score: " << nodes[i].score << std::endl;
+            std::cout << "\tX do nó: " << nodes[i].x << "\tY do nó: " << nodes[i].y << "\tScore: " << nodes[i].score << std::endl;
         }
         std::cout << "-------------------------------------------------------------\n";
     };

@@ -70,9 +70,6 @@ OPHS* read_input(string path)
             nos[i].vis = false;
         }
 
-        nos[0].vis = true;
-        trips[0]->add(nos[0]); //Adiciona na primeira trip o hotel de início(H0)
-
         for(int i = numExtraHotels + 2; i < numExtraHotels + numVertices; i++){
 
             getline(file, line);
