@@ -7,7 +7,7 @@ using namespace std;
 
 int main(){
     string instance_folder = "../instances/OPHS_instances_February 2013/";
-    string instance_name = "SET1 102/64-45-1-2";
+    string instance_name = "SET1 1-2/64-45-1-2";
 
     OPHS *data = read_input(instance_folder+instance_name+".ophs");
 

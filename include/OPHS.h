@@ -15,7 +15,7 @@ private:
     Trip **trips; //Guarda as trips do tour
     Node *vertex; //Guarda os hoteis e nós
     float **d_matrix; //Matriz com distâncias
-
+    int totalScore;
 public:
     OPHS(int numVertices, int numExtraHotels, int numTrips, float totalTourLength, Node* vertex, float **d_matrix, Trip **trips){
         this->numVertices = numVertices;
@@ -43,6 +43,14 @@ public:
     float getDistance(int i, int j) {return this->d_matrix[i][j];};
     Trip** getTrips()     {return this->trips;};
     Trip* getTrip(int i)  {return this->trips[i];};
+    float** getd_matrix()     {return this->d_matrix;};
+    int getTotalScoreTour()   {
+        int val = 0;
+        for(int i = 0; i < this->numTrips; i++){
+            val += trips[i]->getScoreTrip();
+        }
+        return val;
+    }
 };
 
 #endif

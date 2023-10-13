@@ -222,16 +222,20 @@ void pre_processing(OPHS *data){
         cout << endl;
     }    
 
-    vector<int> hoteis = construct_initial_tour_backward(data, matrix_pre_processing);
     data->getTrip(0)->setStartHotel(0);
-    data->getTrip(0)->setEndHotel(hoteis[1]);
-    int cont = 1;
+    data->getTrip(0)->setEndHotel(4);
+    data->getTrip(1)->setStartHotel(4);
+    data->getTrip(1)->setEndHotel(1);
+    // vector<int> hoteis = construct_initial_tour_backward(data, matrix_pre_processing);
+    // data->getTrip(0)->setStartHotel(0);
+    // data->getTrip(0)->setEndHotel(hoteis[1]);
+    // int cont = 1;
     
-    while(cont < data->getNumTrips()){
-        data->getTrip(cont)->setStartHotel(hoteis[cont+1]);
-        data->getTrip(cont)->setEndHotel(hoteis[cont+2]);
-        cont++;
-    }
+    // while(cont < data->getNumTrips()){
+    //     data->getTrip(cont)->setStartHotel(hoteis[cont+1]);
+    //     data->getTrip(cont)->setEndHotel(hoteis[cont+2]);
+    //     cont++;
+    // }
 
     for (int i = 0; i < data->getNumExtraHotels() + 2; i++) {
         for (int j = 0; j < data->getNumExtraHotels() + 2; j++) {
@@ -326,6 +330,23 @@ int randomRange(int num_candidatos, float alfa)
     return rand() % mod;
 }
 
+void avalia_hoteis(OPHS *data){
+    for(int i = 0; i < data->getNumTrips()-1; i++){
+        Trip *avaliada = data->getTrip(i);
+        float min = avaliada->getCurrentLength() + data->getDistance(avaliada->getNodes().back().id, 0);
+        int indice = 0;
+        for(int j = 1; j < data->getNumExtraHotels() + 2; j++){
+            float new_min = avaliada->getCurrentLength() + data->getDistance(avaliada->getNodes().back().id, j);
+            if(new_min < min){
+                min = new_min;
+                indice = j;
+            }
+        }
+        avaliada->setEndHotel(indice);
+        data->getTrip(i+1)->setStartHotel(indice);
+    }
+}
+
 void constructive_algorithm(OPHS *data) {
     time_t seed = time(NULL);
     srand(seed);
@@ -340,26 +361,28 @@ void constructive_algorithm(OPHS *data) {
         vector<tuple<int, int, float, float>> candidatos = generate_candidate_list_ap(data, visiteds, i);
         
         while(!candidatos.empty()){
-            int index = randomRange(std::distance(candidatos.begin(), candidatos.end()), 0.1);
+            int index = randomRange(std::distance(candidatos.begin(), candidatos.end()), 0.57);
             Node good_node = data->getVertex(std::get<0>(candidatos[index]));
             cout << "Valor do length: " << trip->getCurrentLength() << endl;
             trip->updateCurrentLength(std::get<3>(candidatos[index]));
             trip->add(good_node, std::get<1>(candidatos[index]));
             visiteds.insert(std::get<0>(candidatos[index]));
+            avalia_hoteis(data);
             candidatos = generate_candidate_list_ap(data, visiteds, i);
         }
         //Se a trip não está vazia (sem nós!!!!)      
         if(trip->getNodes().size() != 0)
             trip->updateCurrentLength(data->getDistance(trip->getNodes().back().id, trip->getEndHotel()));
     }
-    
+    int totalScore = 0;
     for(int i = 0; i < data->getNumTrips(); i++){
         cout << data->getTrip(i)->getStartHotel() << " " << data->getTrip(i)->getEndHotel() << endl;
         data->getTrip(i)->dadosTrip();
         data->getTrip(i)->dadosNodes();
         cout << "Score: " << data->getTrip(i)->getScoreTrip()<<endl;
+        totalScore +=  data->getTrip(i)->getScoreTrip();
     }
-    
+    cout << totalScore << endl;
 }
 
 
