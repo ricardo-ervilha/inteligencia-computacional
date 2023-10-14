@@ -64,50 +64,48 @@ Trip **generateRandomNeighbor(OPHS *data, Trip **solution, mt19937 *gen)
 
     int numVertices = data->getNumExtraHotels() + data->getNumVertices(); // Numero de vertices do problema
     set<int> idsInSolution = getIdsInSolution(data, solution);
-    vector<int> idsNotInSolution = getIdsNotInSolution(data, idsInSolution);
+    vector<int> idsNotInSolutionOriginal = getIdsNotInSolution(data, idsInSolution);
     set<tuple<int, int, int>> candidatosGerados; // tupla com <indexTrip, indexNoRemover, idRandomVertexAdd>
 
+    int k = 0;
     while (!feasibleRandomSolution)
     {
-        set<int> idsTested;                                               // ids dos nos que ja foram testados
-        int indexRandomTrip = intRandom(0, data->getNumTrips() - 1, gen); // index da trip a ser modificada
+        k++;
+        vector<int> idsNotInSolution = idsNotInSolutionOriginal;
 
         // pega um vertice aleatorio, desconsiderando os index dos hoteis e que não esteja na solução
         // int idRandomVertexAdd = intRandom(data->getNumExtraHotels() + 2, numVertices - 1, gen); // id do no que vai ser colocado
         int indexRandomVertexAdd = intRandom(0, idsNotInSolution.size() - 1, gen); // index no idsNotInSolution do no que vai ser colocado
+        int idRandomVertexAdd = idsNotInSolution[indexRandomVertexAdd];
+        idsNotInSolution.erase(idsNotInSolution.begin() + indexRandomVertexAdd); // apago para não pegar esse id novamente
 
-        vector<Node> nodesTrip = solution[indexRandomTrip]->getNodes(); // nos da trip aleatoria
+        int indexRandomTrip = intRandom(0, data->getNumTrips() - 1, gen); // index da trip a ser modificada
+        vector<Node> nodesTrip = solution[indexRandomTrip]->getNodes();   // nos da trip aleatoria
 
         // pega um no aleatório da trip [indexRandomTrip] - nodesTrip não tem os hoteis
         int indexRandomNodeRemover = intRandom(0, nodesTrip.size() - 1, gen); // index do no que vai ser removido
 
-        tuple<int, int, int> candidato = make_tuple(indexRandomTrip, indexRandomNodeRemover, idsNotInSolution[indexRandomVertexAdd]);
+        tuple<int, int, int> candidato = make_tuple(indexRandomTrip, indexRandomNodeRemover, idRandomVertexAdd);
 
         // fica no loop enquanto não gerar um vertex valido
-        bool achouValido = true;
-        // verifica se o no ja esta na solução ou se ja foi avaliado
-        // diferente de end, significa que ele foi encontrado
-        while ((candidatosGerados.find(candidato) != candidatosGerados.end()))
+        while (idsNotInSolution.size() > 0 && (candidatosGerados.find(candidato) != candidatosGerados.end()))
         {
-            idsTested.insert(idsNotInSolution[indexRandomVertexAdd]);
-            if (idsTested.size() == idsNotInSolution.size()) // testou todos os vertices e não achou nenhum viavel
-            {
-                achouValido = false;
-                break;
-            }
             indexRandomVertexAdd = intRandom(0, idsNotInSolution.size() - 1, gen); // index no idsNotInSolution do no que vai ser colocado
-            candidato = make_tuple(indexRandomTrip, indexRandomNodeRemover, idsNotInSolution[indexRandomVertexAdd]);
+            idRandomVertexAdd = idsNotInSolution[indexRandomVertexAdd];
+
+            idsNotInSolution.erase(idsNotInSolution.begin() + indexRandomVertexAdd); // apago para não pegar esse id novamente
+            candidato = make_tuple(indexRandomTrip, indexRandomNodeRemover, idRandomVertexAdd);
         }
 
-        // se não achou indexRandomVertexAdd valido, vai pra proxima iteração sortear outra trip e outro no pra remover
-        if (!achouValido)
+        // se não achou idRandomVertexAdd valido, vai pra proxima iteração sortear outra trip e outro no pra remover
+        if (idsNotInSolution.size() == 0)
         {
             continue;
         }
 
         auto result = candidatosGerados.insert(candidato); // candidatos validos que ja foram avaliados
 
-        Node randomVertex = data->getVertex(idsNotInSolution[indexRandomVertexAdd]);
+        Node randomVertex = data->getVertex(idRandomVertexAdd);
         nodesTrip[indexRandomNodeRemover] = randomVertex; // Substituir por randomVertex
 
         float lengthTrip = calcTripLength(data, solution[indexRandomTrip]->getStartHotel(), solution[indexRandomTrip]->getEndHotel(), nodesTrip);
