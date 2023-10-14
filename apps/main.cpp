@@ -13,29 +13,33 @@ int main()
     cout << "SEED: " << seed << endl;
 
     string instance_folder = "../instances/OPHS_instances_February 2013/";
-    string instance_name = "SET1 1-2/64-45-1-2";
+    string instance_name = "SET4/100-20-3-2";
 
     OPHS *data = read_input(instance_folder + instance_name + ".ophs");
 
     greedy_randomized_adaptive_reactive_procedure(data, &gen);
 
-    // Trip** tour = load_solution("../out/"+instance_name+".ophsout", data);
+    // load_solution("../out/"+instance_name+".ophsout", data);
 
     int iteracoes = 100;
     float temperaturaInicial = 100;
     float temperaturaFinal = 0.01;
     Trip **solucaoInicial = data->getTrips();
+    float scoreSolInicial = getScoreTour(data, solucaoInicial);
 
     printTrips(data, solucaoInicial);
-
     cout << "Entrou simulated\n";
-    Trip **novaSolucao = simulatedAnnealing(data, solucaoInicial, iteracoes, temperaturaInicial, temperaturaFinal, &gen);
-    cout << "Saiu simulated\n";
-    float scoreSolInicial = getScoreTour(data, solucaoInicial);
-    float scoreNovaSol = getScoreTour(data, novaSolucao);
     cout << "SOLUCAO: " << scoreSolInicial << endl;
+
+    Trip **novaSolucao = simulatedAnnealing(data, solucaoInicial, iteracoes, temperaturaInicial, temperaturaFinal, &gen);
+    
+    cout << "Saiu simulated\n";
+    
+    float scoreNovaSol = getScoreTour(data, novaSolucao);
+    
     cout << "SOLUCAO SA: " << scoreNovaSol << endl;
     cout << "Melhora de : " << ((scoreNovaSol / scoreSolInicial) - 1) * 100 << " %" << endl;
+    printTrips(data, novaSolucao);
 
     return 0;
 }

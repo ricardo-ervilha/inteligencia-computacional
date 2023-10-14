@@ -21,6 +21,20 @@ set<int> getIdsInSolution(OPHS *data, Trip **solution)
     return idsInSolution;
 }
 
+vector<int> getIdsNotInSolution(OPHS *data, set<int> idsInSolution)
+{
+    vector<int> idsNotInSolution;
+    for (int i = data->getNumExtraHotels() + 2; i < data->getNumExtraHotels() + data->getNumVertices(); i++)
+    {
+        if (idsInSolution.find(data->getVertex(i).id) == idsInSolution.end())
+        {
+            idsNotInSolution.push_back(data->getVertex(i).id);
+        }
+    }
+
+    return idsNotInSolution;
+}
+
 bool isTripFeasible(OPHS *data, Trip *trip)
 {
     float lengthTrip = calcTripLength(data, trip);
@@ -39,51 +53,74 @@ bool isTripFeasible(OPHS *data, Trip *trip, vector<Node> nos)
     return lengthTrip <= trip->getTd();
 }
 
-// Arrumar um jeito de não gerar soluções repetidas
+/*
+    sortear uma trip e um index dessa trip
+    verificar qual o melhor no para adicionar nessa posição
+*/
+
 Trip **generateRandomNeighbor(OPHS *data, Trip **solution, mt19937 *gen)
 {
     bool feasibleRandomSolution = false;
 
     int numVertices = data->getNumExtraHotels() + data->getNumVertices(); // Numero de vertices do problema
     set<int> idsInSolution = getIdsInSolution(data, solution);
-    set<int> idsTested; // index dos nos que ja foram testados
-
-    /*
-        set de tuplas para não gerar os mesmos index
-        indexTrip - qual trip vai ser modificada
-        indexNoRemover - qual no vai ser removido dessa trip
-        idRandomVertexAdd - da lista de vertex geral, qual vai ser adicionado
-    */
+    vector<int> idsNotInSolution = getIdsNotInSolution(data, idsInSolution);
     set<tuple<int, int, int>> candidatosGerados; // tupla com <indexTrip, indexNoRemover, idRandomVertexAdd>
 
     while (!feasibleRandomSolution)
     {
+        set<int> idsTested;                                               // ids dos nos que ja foram testados
         int indexRandomTrip = intRandom(0, data->getNumTrips() - 1, gen); // index da trip a ser modificada
-        // pega um vertice aleatorio, desconsiderando os index dos hoteis e que não esteja na solução
-        int idRandomVertexAdd = intRandom(data->getNumExtraHotels() + 2, numVertices - 1, gen); // id do no que vai ser colocado
 
-        vector<Node> nodesTrip = solution[indexRandomTrip]->getNodes();
+        // pega um vertice aleatorio, desconsiderando os index dos hoteis e que não esteja na solução
+        // int idRandomVertexAdd = intRandom(data->getNumExtraHotels() + 2, numVertices - 1, gen); // id do no que vai ser colocado
+        int indexRandomVertexAdd = intRandom(0, idsNotInSolution.size() - 1, gen); // index no idsNotInSolution do no que vai ser colocado
+
+        vector<Node> nodesTrip = solution[indexRandomTrip]->getNodes(); // nos da trip aleatoria
 
         // pega um no aleatório da trip [indexRandomTrip] - nodesTrip não tem os hoteis
         int indexRandomNodeRemover = intRandom(0, nodesTrip.size() - 1, gen); // index do no que vai ser removido
 
-        tuple<int, int, int> candidato = make_tuple(indexRandomTrip, indexRandomNodeRemover, idRandomVertexAdd);
+        tuple<int, int, int> candidato = make_tuple(indexRandomTrip, indexRandomNodeRemover, idsNotInSolution[indexRandomVertexAdd]);
 
         // fica no loop enquanto não gerar um vertex valido
-        while (idsInSolution.find(idRandomVertexAdd) != idsInSolution.end() && candidatosGerados.find(candidato) != candidatosGerados.end())
+        bool achouValido = true;
+        // verifica se o no ja esta na solução ou se ja foi avaliado
+        // diferente de end, significa que ele foi encontrado
+        while ((candidatosGerados.find(candidato) != candidatosGerados.end()))
         {
-            idRandomVertexAdd = intRandom(data->getNumExtraHotels() + 2, numVertices - 1, gen);
+            idsTested.insert(idsNotInSolution[indexRandomVertexAdd]);
+            if (idsTested.size() == idsNotInSolution.size()) // testou todos os vertices e não achou nenhum viavel
+            {
+                achouValido = false;
+                break;
+            }
+            indexRandomVertexAdd = intRandom(0, idsNotInSolution.size() - 1, gen); // index no idsNotInSolution do no que vai ser colocado
+            candidato = make_tuple(indexRandomTrip, indexRandomNodeRemover, idsNotInSolution[indexRandomVertexAdd]);
         }
 
-        candidato = make_tuple(indexRandomTrip, indexRandomNodeRemover, idRandomVertexAdd);
-        auto result = candidatosGerados.insert(candidato);
+        // se não achou indexRandomVertexAdd valido, vai pra proxima iteração sortear outra trip e outro no pra remover
+        if (!achouValido)
+        {
+            continue;
+        }
 
-        Node randomVertex = data->getVertex(idRandomVertexAdd);
+        auto result = candidatosGerados.insert(candidato); // candidatos validos que ja foram avaliados
+
+        Node randomVertex = data->getVertex(idsNotInSolution[indexRandomVertexAdd]);
         nodesTrip[indexRandomNodeRemover] = randomVertex; // Substituir por randomVertex
 
         float lengthTrip = calcTripLength(data, solution[indexRandomTrip]->getStartHotel(), solution[indexRandomTrip]->getEndHotel(), nodesTrip);
+        // cout << "-------------vizinho------------------" << endl;
+        // printIdsTrips(data, solution);
         if (lengthTrip <= solution[indexRandomTrip]->getTd())
         {
+            // cout << "nós trip: " << endl;
+            // for (int k = 0; k < nodesTrip.size(); k++)
+            // {
+            //     cout << nodesTrip[k].id << " ";
+            // }
+            // cout << endl;
             // printTrips(data, solution);
             // cout << "Qualidade solução: " << getScoreTour(data, solution) << endl;
 
@@ -94,12 +131,12 @@ Trip **generateRandomNeighbor(OPHS *data, Trip **solution, mt19937 *gen)
             // cout << "Gerou solução viavel" << endl;
             // cout << "index trip a ser modificada: " << indexRandomTrip << endl;
             // cout << "index no removido: " << indexRandomNodeRemover << endl;
-            // cout << "id do no add: " << idRandomVertexAdd << endl;
+            // cout << "id do no add: " << indexRandomVertexAdd << endl;
             // printTrips(data, solution);
             // cout << "Qualidade solução: " << getScoreTour(data, solution) << endl;
         }
 
-        // cout <<"indexRandomTrip: "<<indexRandomTrip<<" idRandomVertexAdd: "<<idRandomVertexAdd<< " indexRandomNodeRemover: "<<indexRandomNodeRemover<<endl;
+        // cout <<"indexRandomTrip: "<<indexRandomTrip<<" indexRandomVertexAdd: "<<indexRandomVertexAdd<< " indexRandomNodeRemover: "<<indexRandomNodeRemover<<endl;
     }
     return solution;
 }
@@ -157,13 +194,10 @@ Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, fl
                 {
                     initialSolution = neighborSolution;
                 }
-                else
-                {
-                    // deletar solução anterior
-                }
             }
 
             // cout << "Iteração: " << iter << " Qualida da best: " << getScoreTour(data, bestSolution)<<endl;
+
             iter++;
         }
         iteracoesT++;
