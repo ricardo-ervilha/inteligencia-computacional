@@ -452,8 +452,8 @@ void greedy_randomized_adaptive_reactive_procedure(OPHS *data, mt19937 *gen)
         q[i] = 0;
     }
     
-    int maxIteracoes = 50;
-    int y = maxIteracoes / 5; //Vai recalcular 5 vezes, a cada 10 iterações
+    int maxIteracoes = 200;
+    int y = maxIteracoes / 10; //Vai recalcular 5 vezes, a cada 10 iterações
 
     for(int i = 0; i < maxIteracoes; i++){
         int indice_alfa = sorteia_alfa(probAlfas, tamAlfa);
@@ -469,11 +469,11 @@ void greedy_randomized_adaptive_reactive_procedure(OPHS *data, mt19937 *gen)
         
         //Atualiza melhor solução.
         if(i == 0){
-            melhor = result;
+            melhor = makeCopySolution(data, result);
             scoreMelhor = scoreTotal;
         }else{
             if(scoreTotal > scoreMelhor){
-                melhor = result;
+                melhor = makeCopySolution(data, result);
                 scoreMelhor = scoreTotal;
             }
         }
@@ -487,13 +487,14 @@ void greedy_randomized_adaptive_reactive_procedure(OPHS *data, mt19937 *gen)
                 numVezesAlfas[i] = 0;
             }
         }
-        
-        delete result;
+        delete [] result;
         data->setTrips(copia);
         copia = makeCopySolution(data, data->getTrips());
         
     }
-    
+    printTrips(data, melhor);
+    cout << "AAAH: " << getScoreTour(data, melhor) << endl;
+    data->setTrips(melhor);
     cout << "Score do calabreso: " << scoreMelhor << endl;
 }
 
