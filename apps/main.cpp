@@ -17,7 +17,7 @@ int main()
 
     OPHS *data = read_input(instance_folder + instance_name + ".ophs");
 
-    constructive_algorithm(data);
+    constructive_algorithm(data, &gen);
 
     // Trip** tour = load_solution("../out/"+instance_name+".ophsout", data);
 
@@ -25,7 +25,7 @@ int main()
     float temperaturaInicial = 100;
     float temperaturaFinal = 0.01;
     Trip **solucaoInicial = data->getTrips();
-    Trip **novaSolucao = simulatedAnnealing(data, solucaoInicial, iteracoes, temperaturaInicial, temperaturaFinal, gen);
+    Trip **novaSolucao = simulatedAnnealing(data, solucaoInicial, iteracoes, temperaturaInicial, temperaturaFinal, &gen);
 
     float scoreSolInicial = getScoreTour(data, solucaoInicial);
     float scoreNovaSol = getScoreTour(data, novaSolucao);

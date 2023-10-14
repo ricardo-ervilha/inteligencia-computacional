@@ -118,7 +118,7 @@ float updateTemperature(float T)
 /// @param T Temperatura inicial
 /// @param Tmin Temperatura mínima
 /// @return Trip
-Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, float T, float Tmin, mt19937 gen)
+Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, float T, float Tmin, mt19937 *gen)
 {
     Trip **bestSolution = initialSolution;
 
@@ -129,7 +129,7 @@ Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, fl
         while (iter < iterations)
         {
             Trip **copySolution = makeCopySolution(data, initialSolution);
-            Trip **neighborSolution = generateRandomNeighbor(data, copySolution, &gen);
+            Trip **neighborSolution = generateRandomNeighbor(data, copySolution, gen);
 
             float neighborSolutionScore = getScoreTour(data, neighborSolution);
             float initialSolutionScore = getScoreTour(data, initialSolution);
@@ -151,7 +151,7 @@ Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, fl
             else
             {
                 float p = exp(-deltaE / T);
-                float x = doubleRandom(0.0, 1.0, &gen);
+                float x = doubleRandom(0.0, 1.0, gen);
                 // cout << "Temperatura T: " << T << "\t|";
                 // cout << " deltaE: " << deltaE << "\t|";
                 // cout << " probabilidade: " << p << "\t\t|";

@@ -324,10 +324,10 @@ vector<tuple<int, int, float, float>> generate_candidate_list_ap(OPHS *data, set
 }
 
 
-int randomRange(int num_candidatos, float alfa)
+int randomRange(int num_candidatos, float alfa, mt19937 *gen)
 {
     int mod = ceil(alfa * num_candidatos);
-    return rand() % mod;
+    return intRandom(0, num_candidatos, gen) % mod;
 }
 
 void avalia_hoteis(OPHS *data){
@@ -347,9 +347,9 @@ void avalia_hoteis(OPHS *data){
     }
 }
 
-void constructive_algorithm(OPHS *data) {
-    time_t seed = time(NULL);
-    srand(seed);
+void constructive_algorithm(OPHS *data, mt19937 *gen) {
+    // time_t seed = time(NULL);
+    // srand(seed);
 
     pre_processing(data); //preenche o tour com os hoteis.
 
@@ -361,7 +361,7 @@ void constructive_algorithm(OPHS *data) {
         vector<tuple<int, int, float, float>> candidatos = generate_candidate_list_ap(data, visiteds, i);
         
         while(!candidatos.empty()){
-            int index = randomRange(std::distance(candidatos.begin(), candidatos.end()), 0.57);
+            int index = randomRange(std::distance(candidatos.begin(), candidatos.end()), 0.57, gen);
             Node good_node = data->getVertex(std::get<0>(candidatos[index]));
             cout << "Valor do length: " << trip->getCurrentLength() << endl;
             trip->updateCurrentLength(std::get<3>(candidatos[index]));
