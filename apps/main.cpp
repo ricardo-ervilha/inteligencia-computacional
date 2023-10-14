@@ -2,18 +2,36 @@
 #include "../include/file_io.h"
 #include "../include/greedy.h"
 #include "util.h"
+#include "simulated_annealing.h"
 
 using namespace std;
 
-int main(){
-    string instance_folder = "../instances/OPHS_instances_February 2013/";
-    string instance_name = "SET1 1-2/64-45-1-2";
+int main()
+{
+    unsigned int seed = chrono::system_clock::now().time_since_epoch().count();
+    mt19937 gen(seed); // gerador de números aleatórios com a semente
+    cout << "SEED: " << seed << endl;
 
-    OPHS *data = read_input(instance_folder+instance_name+".ophs");
+    string instance_folder = "../instances/OPHS_instances_February 2013/";
+    string instance_name = "SET4/100-20-3-2";
+
+    OPHS *data = read_input(instance_folder + instance_name + ".ophs");
 
     constructive_algorithm(data);
 
-    //Trip** tour = load_solution("../out/"+instance_name+".ophsout", data);
+    // Trip** tour = load_solution("../out/"+instance_name+".ophsout", data);
+
+    int iteracoes = 100;
+    float temperaturaInicial = 100;
+    float temperaturaFinal = 0.01;
+    Trip **solucaoInicial = data->getTrips();
+    Trip **novaSolucao = simulatedAnnealing(data, solucaoInicial, iteracoes, temperaturaInicial, temperaturaFinal, gen);
+
+    float scoreSolInicial = getScoreTour(data, solucaoInicial);
+    float scoreNovaSol = getScoreTour(data, novaSolucao);
+    cout << "SOLUCAO: " << scoreSolInicial << endl;
+    cout << "SOLUCAO SA: " << scoreNovaSol << endl;
+    cout << "Melhora de : " << ((scoreNovaSol / scoreSolInicial) - 1) * 100 << " %" << endl;
 
     return 0;
 }

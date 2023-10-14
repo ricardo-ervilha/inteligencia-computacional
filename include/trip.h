@@ -2,8 +2,10 @@
 #define TRIP_h
 
 #include <vector>
+#include "OPHS.h"
 
 typedef unsigned int uint;
+using namespace std;
 
 class Trip
 {
@@ -23,8 +25,10 @@ public:
     void setEndHotel(int h1)      {this->h1 = h1;};
     ~Trip(){};
     float getTd() { return this->td; };
+    void setCurrentLength(float val){this->currentLength = val;};
     float getCurrentLength() { return this->currentLength; };
     uint getId() { return this->id; };
+    void setNodes(std::vector<Node> newNodes){ this->nodes = newNodes;}
     std::vector<Node> getNodes() { return this->nodes; };
     Node getNode(int i) { return this->nodes[i]; };
     void add(Node no) { nodes.push_back(no); };
@@ -39,7 +43,7 @@ public:
     {
         for (int i = 0; i < nodes.size(); i++)
         {
-            std::cout << "Id do nó: "<< nodes[i].id;
+            std::cout << "\tId do nó: "<< nodes[i].id;
             std::cout << "\tX do nó: " << nodes[i].x << "\tY do nó: " << nodes[i].y << "\tScore: " << nodes[i].score << std::endl;
         }
         std::cout << "-------------------------------------------------------------\n";
@@ -56,6 +60,15 @@ public:
             totalScore += nodes[i].score;
         }
         return totalScore;
+    }
+    void apagaPrimeiro(){
+        cout <<"Tamanho antes: "<<this->nodes.size();
+        this->nodes.erase(this->nodes.begin());
+        cout <<"Tamanho depois: "<<this->nodes.size();
+    }
+
+    void printAdress(){
+        cout <<"Address: "<<&this->nodes[0]<<endl;
     }
 };
 

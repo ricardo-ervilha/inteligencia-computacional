@@ -38,7 +38,7 @@ void print_distance_matrix(float **d_matrix, uint size){
 }
 
 void print_node(Node node){
-    std::cout << "("<<node.x<<" , "<<node.y<<") \t\t "<<node.score<<std::endl;
+    std::cout << "ID: "<<node.id<< "\t(" <<node.x<<" , "<<node.y<<")\tScore: "<<node.score<<std::endl;
 }
 
 #endif // NO_H
