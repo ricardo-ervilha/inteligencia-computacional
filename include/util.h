@@ -49,15 +49,21 @@ int intRandom(int min, int max, mt19937 *gen)
 
 Trip **makeCopySolution(OPHS *data, Trip **initialSolution)
 {
+   
     Trip **copyTrips = new Trip *[data->getNumTrips()];
 
     // inicializar as trips
     for (int i = 0; i < data->getNumTrips(); i++)
     {
+        
         copyTrips[i] = new Trip(data->getTrips()[i]->getTd()); // Td   = trip max length for each trip d
+        
         copyTrips[i]->setStartHotel(initialSolution[i]->getStartHotel());
+        
         copyTrips[i]->setEndHotel(initialSolution[i]->getEndHotel());
+        
         copyTrips[i]->updateCurrentLength(initialSolution[i]->getCurrentLength());
+        
         copyTrips[i]->setNodes(initialSolution[i]->getNodes());
     }
 

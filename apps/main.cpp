@@ -17,21 +17,21 @@ int main()
 
     OPHS *data = read_input(instance_folder + instance_name + ".ophs");
 
-    constructive_algorithm(data, &gen);
+    greedy_randomized_adaptive_reactive_procedure(data, &gen);
 
     // Trip** tour = load_solution("../out/"+instance_name+".ophsout", data);
 
-    int iteracoes = 100;
-    float temperaturaInicial = 100;
-    float temperaturaFinal = 0.01;
-    Trip **solucaoInicial = data->getTrips();
-    Trip **novaSolucao = simulatedAnnealing(data, solucaoInicial, iteracoes, temperaturaInicial, temperaturaFinal, &gen);
+    // int iteracoes = 100;
+    // float temperaturaInicial = 100;
+    // float temperaturaFinal = 0.01;
+    // Trip **solucaoInicial = data->getTrips();
+    // Trip **novaSolucao = simulatedAnnealing(data, solucaoInicial, iteracoes, temperaturaInicial, temperaturaFinal, &gen);
 
-    float scoreSolInicial = getScoreTour(data, solucaoInicial);
-    float scoreNovaSol = getScoreTour(data, novaSolucao);
-    cout << "SOLUCAO: " << scoreSolInicial << endl;
-    cout << "SOLUCAO SA: " << scoreNovaSol << endl;
-    cout << "Melhora de : " << ((scoreNovaSol / scoreSolInicial) - 1) * 100 << " %" << endl;
+    // float scoreSolInicial = getScoreTour(data, solucaoInicial);
+    // float scoreNovaSol = getScoreTour(data, novaSolucao);
+    // cout << "SOLUCAO: " << scoreSolInicial << endl;
+    // cout << "SOLUCAO SA: " << scoreNovaSol << endl;
+    // cout << "Melhora de : " << ((scoreNovaSol / scoreSolInicial) - 1) * 100 << " %" << endl;
 
     return 0;
 }

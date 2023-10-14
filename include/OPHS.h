@@ -42,6 +42,7 @@ public:
     Node getVertex(int i)   {return this->vertex[i];};
     float getDistance(int i, int j) {return this->d_matrix[i][j];};
     Trip** getTrips()     {return this->trips;};
+    void setTrips(Trip **trips) {this->trips = trips;};
     Trip* getTrip(int i)  {return this->trips[i];};
     float** getd_matrix()     {return this->d_matrix;};
     int getTotalScoreTour()   {

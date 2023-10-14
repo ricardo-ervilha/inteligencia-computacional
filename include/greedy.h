@@ -8,6 +8,7 @@
 #include <chrono>
 #include <stdlib.h> /* srand, rand */
 #include <time.h>   /* time */
+#include "util.h"
 
 bool compareCandidatos(std::tuple<int, float, float> a, std::tuple<int,float, float> b)
 {
@@ -326,6 +327,8 @@ vector<tuple<int, int, float, float>> generate_candidate_list_ap(OPHS *data, set
 
 int randomRange(int num_candidatos, float alfa, mt19937 *gen)
 {
+    if(alfa == 0)   
+        return 0;
     int mod = ceil(alfa * num_candidatos);
     return intRandom(0, num_candidatos, gen) % mod;
 }
@@ -347,11 +350,7 @@ void avalia_hoteis(OPHS *data){
     }
 }
 
-void constructive_algorithm(OPHS *data, mt19937 *gen) {
-    // time_t seed = time(NULL);
-    // srand(seed);
-
-    pre_processing(data); //preenche o tour com os hoteis.
+Trip** constructive_algorithm(OPHS *data, mt19937 *gen, float alfa) {
 
     set<int> visiteds; //Lista de visitados global
     for(int i = 0; i < data->getNumTrips();i++){
@@ -361,7 +360,7 @@ void constructive_algorithm(OPHS *data, mt19937 *gen) {
         vector<tuple<int, int, float, float>> candidatos = generate_candidate_list_ap(data, visiteds, i);
         
         while(!candidatos.empty()){
-            int index = randomRange(std::distance(candidatos.begin(), candidatos.end()), 0.57, gen);
+            int index = randomRange(std::distance(candidatos.begin(), candidatos.end()), alfa, gen);
             Node good_node = data->getVertex(std::get<0>(candidatos[index]));
             cout << "Valor do length: " << trip->getCurrentLength() << endl;
             trip->updateCurrentLength(std::get<3>(candidatos[index]));
@@ -383,7 +382,119 @@ void constructive_algorithm(OPHS *data, mt19937 *gen) {
         totalScore +=  data->getTrip(i)->getScoreTrip();
     }
     cout << totalScore << endl;
+
+    return data->getTrips();
 }
 
+int sorteia_alfa(float *probAlfas, int tamAlfas){
+    //Usando probabilidade acumulada.
+    double random_number = rand() / (float)RAND_MAX;
+    
+    cout << random_number << endl;
+    
+    float val_acumulado = 0;
+    int i;
+    for(i = 0; i < tamAlfas; i++){
+        val_acumulado += probAlfas[i];
+        if(random_number <= val_acumulado){
+            return i;
+        }
+    }
+    return i-1;
+}
+
+void recalculaQis(float *q, int* somaAlfas, int *numVezesAlfas, int tamAlfa, int scoreMelhor){
+    int teta = 10;
+    for(int i = 0; i < tamAlfa; i++){
+        if(numVezesAlfas[i] != 0){
+            float media = somaAlfas[i]/numVezesAlfas[i]; 
+            q[i] = pow((scoreMelhor / media) , teta);
+        }
+    }
+}
+
+void atualizaProbabilidades(float *q, float *probabilidades, int tamAlfa){
+    float somatorioQ = 0;
+    for(int i = 0; i < tamAlfa; i++){
+        somatorioQ += q[i];
+    }
+
+    for(int i = 0; i < tamAlfa; i++){
+        probabilidades[i] = q[i] / somatorioQ; 
+    }
+}
+
+void greedy_randomized_adaptive_reactive_procedure(OPHS *data, mt19937 *gen)
+{   
+    time_t val = time(NULL);
+    srand(val);
+    cout << "Seed do GRARP: " << val << endl;
+
+    pre_processing(data); //preenche o tour com os hoteis iniciais.
+
+    Trip **copia = makeCopySolution(data, data->getTrips());
+    Trip **melhor;
+    int scoreMelhor;
+    Trip** result;
+    int scoreTotal;
+
+    int tamAlfa = 7;
+    float alfas[7] = {0.0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5}; 
+    float probAlfas[7];
+    int somaAlfas[7];
+    int numVezesAlfas[7];
+    float q[7];
+    
+    for(int i = 0; i < tamAlfa; i++){
+        probAlfas[i] = 1/tamAlfa;
+        somaAlfas[i] = 0;
+        numVezesAlfas[i] = 0;
+        q[i] = 0;
+    }
+    
+    int maxIteracoes = 50;
+    int y = maxIteracoes / 5; //Vai recalcular 5 vezes, a cada 10 iterações
+
+    for(int i = 0; i < maxIteracoes; i++){
+        int indice_alfa = sorteia_alfa(probAlfas, tamAlfa);
+        cout << "Craque\n";
+        cout << indice_alfa << endl;
+        cout << alfas[indice_alfa] << endl;
+        result = constructive_algorithm(data, gen, alfas[indice_alfa]);
+        
+        scoreTotal = getScoreTour(data, result);
+        
+        somaAlfas[indice_alfa] += scoreTotal;
+        numVezesAlfas[indice_alfa] += 1;
+        
+        //Atualiza melhor solução.
+        if(i == 0){
+            melhor = result;
+            scoreMelhor = scoreTotal;
+        }else{
+            if(scoreTotal > scoreMelhor){
+                melhor = result;
+                scoreMelhor = scoreTotal;
+            }
+        }
+        
+        //Depois de rodar y vezes chega a hora de recalcular as probabilidades.
+        if(i % y == 0){
+            recalculaQis(q, somaAlfas, numVezesAlfas, tamAlfa, scoreMelhor);
+            atualizaProbabilidades(q, probAlfas, tamAlfa);
+            for(int i = 0; i < tamAlfa; i++){
+                somaAlfas[i] = 0;
+                numVezesAlfas[i] = 0;
+            }
+        }
+        
+        delete result;
+        data->setTrips(copia);
+        copia = makeCopySolution(data, data->getTrips());
+        
+    }
+    
+    cout << "Score do calabreso: " << scoreMelhor << endl;
+}
 
 #endif
