@@ -117,7 +117,7 @@ float calcTripLength(OPHS *data, int startHotel, int endHotel, vector<Node> nos)
     return lengthTrip;
 }
 
-Trip **load_solution(string solutionPath, OPHS *data)
+void load_solution(string solutionPath, OPHS *data)
 {
     cout << "Abrindo arquivo solução no caminho: " << solutionPath << endl;
     ifstream file(solutionPath);
@@ -149,14 +149,12 @@ Trip **load_solution(string solutionPath, OPHS *data)
 
             trips[i]->updateCurrentLength(calcTripLength(data, trips[i]));
         }
-        return trips;
+        data->setTrips(trips);
     }
     else
     {
         cout << "Erro ao abrir arquivo " << solutionPath << endl;
     }
-
-    return nullptr;
 }
 
 void printTrips(OPHS *data, Trip **trips)
@@ -168,6 +166,20 @@ void printTrips(OPHS *data, Trip **trips)
         trips[i]->dadosNodes();
     }
     cout << endl;
+}
+
+void printIdsTrips(OPHS *data, Trip **trips)
+{
+    cout << endl;
+    for (int i = 0; i < data->getNumTrips(); i++)
+    {
+        vector<Node> nodes = trips[i]->getNodes();
+        for (int j = 0; j < nodes.size(); j++)
+        {
+            cout << nodes[j].id << " - ";
+        }
+        cout << endl;
+    }
 }
 
 #endif

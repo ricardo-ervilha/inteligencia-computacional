@@ -65,15 +65,19 @@ int main()
     float temperaturaInicial = 100;
     float temperaturaFinal = 0.01;
     Trip **solucaoInicial = data->getTrips();
+    float scoreSolInicial = getScoreTour(data, solucaoInicial);
+
+    printTrips(data, solucaoInicial);
 
     cout << "Entrou simulated\n";
-    Trip **novaSolucao = simulatedAnnealing(data, solucaoInicial, iteracoes, temperaturaInicial, temperaturaFinal, &gen);
-    cout << "Saiu simulated\n";
-    float scoreSolInicial = getScoreTour(data, solucaoInicial);
-    float scoreNovaSol = getScoreTour(data, novaSolucao);
     cout << "SOLUCAO: " << scoreSolInicial << endl;
+    Trip **novaSolucao = simulatedAnnealing(data, solucaoInicial, iteracoes, temperaturaInicial, temperaturaFinal, &gen);
+   
+    cout << "Saiu simulated\n";
+    float scoreNovaSol = getScoreTour(data, novaSolucao);
     cout << "SOLUCAO SA: " << scoreNovaSol << endl;
     cout << "Melhora de : " << ((scoreNovaSol / scoreSolInicial) - 1) * 100 << " %" << endl;
+    printTrips(data, novaSolucao);
 
     return 0;
 }
