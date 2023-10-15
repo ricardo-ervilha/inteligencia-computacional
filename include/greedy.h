@@ -63,7 +63,7 @@ vector<int> construct_initial_tour_backward(OPHS *data, int ***matrix){
     }
     hoteis.push_back(0);
     reverse(hoteis.begin(), hoteis.end());
-    cout << "Tour Backward: ";
+    cout << ">>>>>>Tour:";
     for(int i = 0; i < hoteis.size(); i++){
         if(i % 2 == 0)
             cout << hoteis[i] << " ";
@@ -112,7 +112,7 @@ vector<int> construct_initial_tour_forward(OPHS *data, int ***matrix){
         cont++;
     }
     hoteis.push_back(1);
-    cout << "Tour Forward: ";
+    cout << ">>>>>>Tour: ";
     for(int i = 0; i < hoteis.size(); i++){
         if(i % 2 == 0)
             cout << hoteis[i] << " ";
@@ -244,10 +244,6 @@ void pre_processing(OPHS *data){
     // construct_initial_tour_backward(data, matrix_pre_processing);
     
 }
-//Impressão dos dados
-// trip->dadosTrip();
-// trip->dadosNodes();
-// cout << "Total score: " << trip->getScoreTrip() << endl;
 
 //ap -> after pre-processing
 vector<tuple<int, int, float, float>> generate_candidate_list_ap(OPHS *data, set<int> visiteds, int idTrip){
@@ -264,10 +260,9 @@ vector<tuple<int, int, float, float>> generate_candidate_list_ap(OPHS *data, set
             if(trip->getNodes().empty()){
                 
                 float incremento = data->getDistance(i, trip->getStartHotel());
-                cout << "i: " << i << endl;
-                cout << "teste: " << trip->getEndHotel() << endl;
+                
                 float distanceToEndHotel = data->getDistance(i, trip->getEndHotel());
-                cout << "pqpq\n";
+                
                 float newDistance = trip->getCurrentLength() + incremento + distanceToEndHotel;
                 if(newDistance <= trip->getTd()){
                     float beneficio = (data->getVertex(i).score / (incremento+distanceToEndHotel) ) * (trip->getTd() - incremento) ;
@@ -336,22 +331,22 @@ int randomRange(int num_candidatos, float alfa, mt19937 *gen)
 void avalia_hoteis(OPHS *data){
     for(int i = 0; i < data->getNumTrips()-1; i++){
         Trip *avaliada = data->getTrip(i);
-        cout << "Oi1\n";
+        
         if(!avaliada->getNodes().empty()){
             float min = avaliada->getCurrentLength() + data->getDistance(avaliada->getNodes().back().id, 0);
         
             int indice = 0;
             for(int j = 1; j < data->getNumExtraHotels() + 2; j++){
-                cout << "Oi2\n";
+                
                 float new_min = avaliada->getCurrentLength() + data->getDistance(avaliada->getNodes().back().id, j);
                 if(new_min < min){
                     min = new_min;
                     indice = j;
                 }
             }
-            cout << "Oi3\n";
+            
             avaliada->setEndHotel(indice);
-            cout << "Oi4\n";
+            
             data->getTrip(i+1)->setStartHotel(indice);
         }
         
@@ -365,40 +360,30 @@ Trip** constructive_algorithm(OPHS *data, mt19937 *gen, float alfa) {
         
         //Passo as trips inicializadas com hoteis, passo visiteds, passo idTrip como i e o último hotel inserido nesse inicio vai ser o hotel de inicio.
         Trip *trip = data->getTrip(i);
-        cout << "Uno\n";
+        
         vector<tuple<int, int, float, float>> candidatos = generate_candidate_list_ap(data, visiteds, i);
-        cout << "Dos\n";
+        
         while(!candidatos.empty()){
-            cout << "Putz grila\n";
             int index = randomRange(std::distance(candidatos.begin(), candidatos.end()), alfa, gen);
-            cout << "abc\n";
+            
             Node good_node = data->getVertex(std::get<0>(candidatos[index]));
-            cout << "Valor do length: " << trip->getCurrentLength() << endl;
             trip->updateCurrentLength(std::get<3>(candidatos[index]));
-            cout << "Teste1\n";
             trip->add(good_node, std::get<1>(candidatos[index]));
-            cout << "Teste2\n";
             visiteds.insert(std::get<0>(candidatos[index]));
-            cout << "Teste3\n";
             avalia_hoteis(data);
-            cout << "Teste4\n";
             candidatos = generate_candidate_list_ap(data, visiteds, i);
-            cout << "Kkkk \n";
+            
         }
-        cout << "Woww\n";
+        
         //Se a trip não está vazia (sem nós!!!!)      
         if(trip->getNodes().size() != 0)
             trip->updateCurrentLength(data->getDistance(trip->getNodes().back().id, trip->getEndHotel()));
-        cout << "Lalalal\n";
+        
     }
-    cout << "Pimba\n";
     int totalScore = 0;
-    cout << "Glowstick\n";
     for(int i = 0; i < data->getNumTrips(); i++){
-        cout << data->getTrip(i)->getStartHotel() << " " << data->getTrip(i)->getEndHotel() << endl;
         data->getTrip(i)->dadosTrip();
         data->getTrip(i)->dadosNodes();
-        cout << "Score: " << data->getTrip(i)->getScoreTrip()<<endl;
         totalScore +=  data->getTrip(i)->getScoreTrip();
     }
     cout << totalScore << endl;
@@ -472,14 +457,12 @@ void greedy_randomized_adaptive_reactive_procedure(OPHS *data, mt19937 *gen)
         q[i] = 0;
     }
     
-    int maxIteracoes = 500;
-    int y = maxIteracoes / 25; //Vai recalcular 5 vezes, a cada 10 iterações
+    int maxIteracoes = 20;
+    int y = maxIteracoes / 5; //Vai recalcular 5 vezes, a cada 10 iterações
 
     for(int i = 0; i < maxIteracoes; i++){
         int indice_alfa = sorteia_alfa(probAlfas, tamAlfa);
-        cout << "Craque\n";
-        cout << indice_alfa << endl;
-        cout << alfas[indice_alfa] << endl;
+        
         result = constructive_algorithm(data, gen, alfas[indice_alfa]);
         
         scoreTotal = getScoreTour(data, result);
@@ -513,9 +496,9 @@ void greedy_randomized_adaptive_reactive_procedure(OPHS *data, mt19937 *gen)
         
     }
     printTrips(data, melhor);
-    cout << "AAAH: " << getScoreTour(data, melhor) << endl;
+    cout << "Só para comparação: " << getScoreTour(data, melhor) << endl;
     data->setTrips(melhor);
-    cout << "Score do calabreso: " << scoreMelhor << endl;
+    cout << "Score do melhor: " << scoreMelhor << endl;
 }
 
 #endif
