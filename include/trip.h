@@ -70,6 +70,13 @@ public:
     void printAdress(){
         cout <<"Address: "<<&this->nodes[0]<<endl;
     }
+
+    void inverterIndexTrip(int i, int j, float novaDistancia){
+        Node auxNode = this->nodes[i];
+        this->nodes[i] = this->nodes[j];
+        this->nodes[j] = auxNode;
+        this->setCurrentLength(novaDistancia);
+    }
 };
 
 #endif

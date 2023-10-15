@@ -117,6 +117,16 @@ float calcTripLength(OPHS *data, int startHotel, int endHotel, vector<Node> nos)
     return lengthTrip;
 }
 
+float calcTripScore(vector<Node> nodesTrip)
+{
+    float totalScore = 0;
+    for (int i = 0; i < nodesTrip.size(); i++)
+    {
+        totalScore += nodesTrip[i].score;
+    }
+    return totalScore;
+}
+
 void load_solution(string solutionPath, OPHS *data)
 {
     cout << "Abrindo arquivo solução no caminho: " << solutionPath << endl;
