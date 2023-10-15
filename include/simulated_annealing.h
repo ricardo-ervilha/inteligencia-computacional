@@ -58,6 +58,46 @@ bool isTripFeasible(OPHS *data, Trip *trip, vector<Node> nos)
     verificar qual o melhor no para adicionar nessa posição
 */
 
+void printCandidatos(set<tuple<int, int, int>> candidatosGerados)
+{
+    for (const auto &tupla : candidatosGerados)
+    {
+        int valor1, valor2, valor3;
+        std::tie(valor1, valor2, valor3) = tupla;
+        std::cout << "Trip " << valor1 << " No " << valor2 << " random " << valor3 << std::endl;
+    }
+}
+
+void printCandidatos(vector<tuple<int, int, int, float, float>> candidatosGerados)
+{
+    for (const auto &tupla : candidatosGerados)
+    {
+        int indexTrip, indexNoRemover, idVertexAdd;
+        float novoScore, novaDistancia;
+        std::tie(indexTrip, indexNoRemover, idVertexAdd, novoScore, novaDistancia) = tupla;
+        std::cout << "Trip " << indexTrip << " IndexNoRemover " << indexNoRemover << " idVertexAdd " << idVertexAdd << " NovoScore: " << novoScore << " NovaDistancia: " << novaDistancia << std::endl;
+    }
+
+    if (candidatosGerados.size() == 0)
+        cout << "Ninguem na lista..." << endl;
+}
+
+int calcMaxCandidatosGerados(OPHS *data, Trip **solution, int sizeNotInSol)
+{
+    int acc = 0;
+    for (int i = 0; i < data->getNumTrips(); i++)
+    {
+        acc += solution[i]->getNodes().size() * sizeNotInSol;
+    }
+
+    return acc;
+}
+
+bool compare(tuple<int, int, int, float, float> a, tuple<int, int, int, float, float> b)
+{
+    return std::get<4>(a) > std::get<4>(b);
+}
+
 Trip **generateRandomNeighbor(OPHS *data, Trip **solution, mt19937 *gen)
 {
     bool feasibleRandomSolution = false;
@@ -139,6 +179,90 @@ Trip **generateRandomNeighbor(OPHS *data, Trip **solution, mt19937 *gen)
     return solution;
 }
 
+vector<tuple<int, int, int, float, float>> geraCandidatos(OPHS *data, Trip **solution, mt19937 *gen)
+{
+    set<int> idsInSolution = getIdsInSolution(data, solution);
+    vector<int> idsNotInSolutionOriginal = getIdsNotInSolution(data, idsInSolution);
+
+    // <indexTrip, indexNoRemover, idRandomVertexAdd, novoScore, novaDistancia> - testar sem calc novoScore
+    vector<tuple<int, int, int, float, float>> candidatosGerados;
+
+    for (int indexTrip = 0; indexTrip < data->getNumTrips(); indexTrip++)
+    {
+        vector<Node> nodesTrip = solution[indexTrip]->getNodes();
+        for (int indexNoRemover = 0; indexNoRemover < nodesTrip.size(); indexNoRemover++)
+        {
+            // faço esse calculo para todos caras que NÃO estão na solução
+            // removendo indexNoRemover e adicionando idVertexAdd no lugar, qual a novaDistancia e qual o beneficio
+            for (int i = 0; i < idsNotInSolutionOriginal.size() - 1; i++)
+            {
+                int idVertexAdd = idsNotInSolutionOriginal[i];
+
+                // remover no e adicionar o novo
+                nodesTrip[indexNoRemover] = data->getVertex(idVertexAdd);
+
+                // calcular distancia total nova
+                float novaDistancia = calcTripLength(data, solution[indexTrip]->getStartHotel(), solution[indexTrip]->getEndHotel(), nodesTrip);
+                if (novaDistancia <= solution[indexTrip]->getTd())
+                {
+                    tuple<int, int, int, float, float> candidato = make_tuple(indexTrip, indexNoRemover, idVertexAdd, 0, novaDistancia);
+                    candidatosGerados.push_back(candidato);
+                }
+            }
+        }
+    }
+
+    return candidatosGerados;
+}
+
+tuple<int, int, int, float, float> getMelhorCandidato(vector<tuple<int, int, int, float, float>> candidatos, mt19937 *gen)
+{
+    // pegar o cara que produz a menor distancia ou sortear entre os cara da lista??
+
+    int indexCandidato = intRandom(0, candidatos.size() - 1, gen);
+    // int indexCandidato = candidatos.size() - 1;
+    // int indexCandidato = 0;
+    tuple<int, int, int, float, float> melhorCandidato = candidatos[indexCandidato];
+
+    // std::sort(candidatos.begin(), candidatos.end(), compare);
+    // auto &melhorCandidato = candidatos.back();
+
+    return melhorCandidato;
+}
+
+Trip **generateRandomNeighbor2(OPHS *data, Trip **solution, mt19937 *gen)
+{
+    // cout << "---------------------------------------" << endl;
+    // <indexTrip, indexNoRemover, idVertexAdd, novoScore, novaDistancia>
+    vector<tuple<int, int, int, float, float>> candidatosGerados = geraCandidatos(data, solution, gen);
+
+    if (!candidatosGerados.empty())
+    {
+        std::sort(candidatosGerados.begin(), candidatosGerados.end(), compare);
+        // printCandidatos(candidatosGerados);
+        tuple<int, int, int, float, float> melhorCandidato = getMelhorCandidato(candidatosGerados, gen);
+
+        int indexTrip, indexNoRemover, idVertexAdd;
+        float novoScore, novaDistancia;
+        std::tie(indexTrip, indexNoRemover, idVertexAdd, novoScore, novaDistancia) = melhorCandidato;
+
+        vector<Node> nodesTrip = solution[indexTrip]->getNodes();
+        nodesTrip[indexNoRemover] = data->getVertex(idVertexAdd);
+
+        solution[indexTrip]->setNodes(nodesTrip);
+
+        float lengthTrip = calcTripLength(data, solution[indexTrip]->getStartHotel(), solution[indexTrip]->getEndHotel(), nodesTrip);
+
+        solution[indexTrip]->setCurrentLength(lengthTrip);
+
+        return solution;
+    }
+    else
+    {
+        return solution;
+    }
+}
+
 float updateTemperature(float T)
 {
     return 0.99 * T;
@@ -161,7 +285,7 @@ Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, fl
         while (iter < iterations)
         {
             Trip **copySolution = makeCopySolution(data, initialSolution);
-            Trip **neighborSolution = generateRandomNeighbor(data, copySolution, gen);
+            Trip **neighborSolution = generateRandomNeighbor2(data, copySolution, gen);
 
             float neighborSolutionScore = getScoreTour(data, neighborSolution);
             float initialSolutionScore = getScoreTour(data, initialSolution);

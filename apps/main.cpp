@@ -33,6 +33,7 @@ int main()
 
     cout << "Entrou simulated\n";
     cout << "SOLUCAO: " << scoreSolInicial << endl;
+    cout << "SEED: " << seed << endl;
     Trip **novaSolucao = simulatedAnnealing(data, solucaoInicial, iteracoes, temperaturaInicial, temperaturaFinal, &gen);
    
     cout << "Saiu simulated\n";

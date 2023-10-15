@@ -499,6 +499,7 @@ void greedy_randomized_adaptive_reactive_procedure(OPHS *data, mt19937 *gen)
     cout << "Só para comparação: " << getScoreTour(data, melhor) << endl;
     data->setTrips(melhor);
     cout << "Score do melhor: " << scoreMelhor << endl;
+    cout << "Seed do GRARP: " << val << endl;
 }
 
 #endif
