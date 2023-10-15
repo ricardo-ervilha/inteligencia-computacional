@@ -13,7 +13,7 @@ int main()
     cout << "SEED: " << seed << endl;
 
     string instance_folder = "../instances/OPHS_instances_February 2013/";
-    string instance_name = "SET4/100-20-3-3";
+    string instance_name = "SET4/100-20-3-2";
 
     OPHS *data = read_input(instance_folder + instance_name + ".ophs");
 

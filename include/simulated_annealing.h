@@ -194,7 +194,7 @@ vector<tuple<int, int, int, float, float>> geraCandidatos(OPHS *data, Trip **sol
         {
             // faço esse calculo para todos caras que NÃO estão na solução
             // removendo indexNoRemover e adicionando idVertexAdd no lugar, qual a novaDistancia e qual o beneficio
-            for (int i = 0; i < idsNotInSolutionOriginal.size() - 1; i++)
+            for (int i = 0; i < idsNotInSolutionOriginal.size(); i++)
             {
                 int idVertexAdd = idsNotInSolutionOriginal[i];
 
@@ -230,6 +230,9 @@ tuple<int, int, int, float, float> getMelhorCandidato(vector<tuple<int, int, int
     return melhorCandidato;
 }
 
+/*
+   tenta remover o ultimo cara da lista que ultrapassa a distancia
+*/
 Trip **generateRandomNeighbor2(OPHS *data, Trip **solution, mt19937 *gen)
 {
     // cout << "---------------------------------------" << endl;
@@ -259,6 +262,7 @@ Trip **generateRandomNeighbor2(OPHS *data, Trip **solution, mt19937 *gen)
     }
     else
     {
+        // cout <<"Não encontrou ninguem...."<<endl;
         return solution;
     }
 }
