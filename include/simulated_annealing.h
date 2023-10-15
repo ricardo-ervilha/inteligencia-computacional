@@ -372,12 +372,13 @@ Trip **insert(OPHS *data, Trip **solution, mt19937 *gen)
     // <indexTrip, indexNo, idxVertexAdd, incrementoDistancia, ratio = score/incrementoDistancia>
     if (candidatosGerados.size() > 1)
     {
-        // cout << "Melhor d: ";
-        // cout << " indexTrip: " << std::get<0>(candidatosGerados[0]);
-        // cout << " indexNo " << std::get<1>(candidatosGerados[0]);
-        // cout << " idxVertexAdd: " << std::get<2>(candidatosGerados[0]);
-        // cout << " incrementoDistancia: " << std::get<3>(candidatosGerados[0]);
-        // cout << " ratio " << std::get<4>(candidatosGerados[0]) << endl;
+        cout << "Inserindo ";
+        cout << " indexTrip: " << std::get<0>(candidatosGerados[0]);
+        cout << " indexNo " << std::get<1>(candidatosGerados[0]);
+        cout << " idxVertexAdd: " << std::get<2>(candidatosGerados[0]);
+        cout << " incrementoDistancia: " << std::get<3>(candidatosGerados[0]);
+        cout << " ratio " << std::get<4>(candidatosGerados[0]) << endl
+             << endl;
 
         int idxAddTrip = std::get<0>(candidatosGerados[0]);
         int idxAddNo = std::get<1>(candidatosGerados[0]);
@@ -451,11 +452,13 @@ Trip **twoOpt(OPHS *data, Trip **solution, mt19937 *gen)
 
         if (std::get<0>(candidatoInverter) != -1)
         {
-            // cout << "Melhor d: ";
-            // cout << " i: " << std::get<0>(candidatoInverter);
-            // cout << " j " << std::get<1>(candidatoInverter);
-            // cout << " antigoD: " << antigaDistancia;
-            // cout << " melhorD " << std::get<2>(candidatoInverter) << endl;
+            cout << "Trocando ";
+            cout << "Trip " << indexTrip;
+            cout << " i: " << std::get<0>(candidatoInverter);
+            cout << " j " << std::get<1>(candidatoInverter);
+            cout << " antigoD: " << antigaDistancia;
+            cout << " melhorD " << std::get<2>(candidatoInverter) << endl
+                 << endl;
 
             // cout << "antes: " << endl;
             // solution[indexTrip]->dadosTrip();
@@ -495,6 +498,7 @@ Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, fl
             Trip **copySolution = makeCopySolution(data, initialSolution);
             Trip **neighborSolution = twoOpt(data, copySolution, gen);
             neighborSolution = insert(data, neighborSolution, gen);
+            neighborSolution = generateRandomNeighbor2(data, neighborSolution, gen);
 
             float neighborSolutionScore = getScoreTour(data, neighborSolution);
             float initialSolutionScore = getScoreTour(data, initialSolution);
@@ -511,6 +515,7 @@ Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, fl
                 if (neighborSolutionScore > bestTotalScore)
                 {
                     bestSolution = neighborSolution;
+                    cout << "Achou sol melhor..."<<"Qualidade: "<< neighborSolutionScore<< endl;
                 }
             }
             else
@@ -533,7 +538,7 @@ Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, fl
         }
         iteracoesT++;
         T = updateTemperature(T);
-        if (iteracoesT % 100 == 0)
+        if (iteracoesT % 10 == 0)
             cout << "IteracaoTemperatura: " << iteracoesT << " Temperatura: " << T << " Qualida da best: " << getScoreTour(data, bestSolution) << endl;
     }
     return bestSolution;
