@@ -714,7 +714,7 @@ Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, fl
         }
         iteracoesT++;
         T = updateTemperature(T);
-        if (iteracoesT % 10 == 0)
+        if (iteracoesT % 150 == 0)
             cout << "IteracaoTemperatura: " << iteracoesT << " Temperatura: " << T << " Qualida da best: " << getScoreTour(data, bestSolution) << endl;
     }
     return bestSolution;

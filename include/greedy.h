@@ -314,7 +314,7 @@ vector<tuple<int, int, float, float>> generate_candidate_list_ap(OPHS *data, set
     }
 
     std::sort(candidatos.begin(), candidatos.end(), anotherCompareCandidatos);
-    imprime_lista_candidatos(candidatos);
+    // imprime_lista_candidatos(candidatos);
     
     return candidatos;
 }
@@ -457,8 +457,8 @@ void greedy_randomized_adaptive_reactive_procedure(OPHS *data, mt19937 *gen)
         q[i] = 0;
     }
     
-    int maxIteracoes = 20;
-    int y = maxIteracoes / 5; //Vai recalcular 5 vezes, a cada 10 iterações
+    int maxIteracoes = 500;
+    int y = maxIteracoes / 50; //Vai recalcular 5 vezes, a cada 10 iterações
 
     for(int i = 0; i < maxIteracoes; i++){
         int indice_alfa = sorteia_alfa(probAlfas, tamAlfa);
