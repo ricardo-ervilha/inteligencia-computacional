@@ -134,6 +134,11 @@ bool compareInsert(tuple<int, int, int, float, float> a, tuple<int, int, int, fl
     return std::get<4>(a) > std::get<4>(b);
 }
 
+bool compareExchange(tuple<int, int, int, float> a, tuple<int, int, int, float> b)
+{
+    return std::get<3>(a) > std::get<3>(b);
+}
+
 Trip **generateRandomNeighbor(OPHS *data, Trip **solution, mt19937 *gen)
 {
     bool feasibleRandomSolution = false;
@@ -308,10 +313,15 @@ Trip **generateRandomNeighbor2(OPHS *data, Trip **solution, mt19937 *gen)
     Para cada nó não incluido, é encontrada a posição com menor distancia.
     Desses nós aquele que produz o maior score/novadistancia é inserido na solução
 */
-Trip **insert(OPHS *data, Trip **solution, mt19937 *gen)
+Trip **insert(OPHS *data, Trip **solution, mt19937 *gen, set<int> nosExcluidos)
 {
     // cout << "Aplicando insert" << endl;
     set<int> idsInSolution = getIdsInSolution(data, solution);
+    for (const auto &el : nosExcluidos)
+    {
+        idsInSolution.insert(el);
+    }
+
     vector<int> idsNotInSolutionOriginal = getIdsNotInSolution(data, idsInSolution);
 
     // <indexTrip, indexNo, idxVertexAdd, incrementoDistancia, ratio = score/incrementoDistancia>
@@ -372,13 +382,13 @@ Trip **insert(OPHS *data, Trip **solution, mt19937 *gen)
     // <indexTrip, indexNo, idxVertexAdd, incrementoDistancia, ratio = score/incrementoDistancia>
     if (candidatosGerados.size() > 1)
     {
-        cout << "Inserindo ";
-        cout << " indexTrip: " << std::get<0>(candidatosGerados[0]);
-        cout << " indexNo " << std::get<1>(candidatosGerados[0]);
-        cout << " idxVertexAdd: " << std::get<2>(candidatosGerados[0]);
-        cout << " incrementoDistancia: " << std::get<3>(candidatosGerados[0]);
-        cout << " ratio " << std::get<4>(candidatosGerados[0]) << endl
-             << endl;
+        // cout << "Inserindo ";
+        // cout << " indexTrip: " << std::get<0>(candidatosGerados[0]);
+        // cout << " indexNo " << std::get<1>(candidatosGerados[0]);
+        // cout << " idxVertexAdd: " << std::get<2>(candidatosGerados[0]);
+        // cout << " incrementoDistancia: " << std::get<3>(candidatosGerados[0]);
+        // cout << " ratio " << std::get<4>(candidatosGerados[0]) << endl
+        //      << endl;
 
         int idxAddTrip = std::get<0>(candidatosGerados[0]);
         int idxAddNo = std::get<1>(candidatosGerados[0]);
@@ -395,6 +405,167 @@ Trip **insert(OPHS *data, Trip **solution, mt19937 *gen)
         // cout << "DEPPOIS " << endl;
         // solution[idxAddTrip]->dadosTrip();
         // solution[idxAddTrip]->dadosNodes();
+    }
+
+    return solution;
+}
+
+// pode estar errada
+// tenta inserir 2 caras da trip e adicionar outros com insert
+Trip **extract2Insert(OPHS *data, Trip **solution, mt19937 *gen)
+{
+    // Para cada Trip, começo do primeiro vertice e removo 2 nos consecutivos
+    for (int indexTrip = 0; indexTrip < data->getNumTrips(); indexTrip++)
+    {
+        Trip **solCopia = makeCopySolution(data, solution);
+        vector<Node> nodesTrip = solCopia[indexTrip]->getNodes();
+
+        if (solCopia[indexTrip]->getNodes().size() > 2)
+        {
+            for (int i = 0; i < solCopia[indexTrip]->getNodes().size() - 1; i++)
+            {
+                // cout << "TRIP: " << indexTrip << endl;
+                solCopia = makeCopySolution(data, solution);
+                float scoreAntigo = getScoreTour(data, solCopia);
+
+                set<int> nosExcluidos;
+                nodesTrip = solCopia[indexTrip]->getNodes();
+
+                // cout << "size antes: " << nodesTrip.size() << endl;
+                // printNodes(nodesTrip);
+
+                // tenta remover i e i+1
+                nosExcluidos.insert(nodesTrip[i].id);
+                nosExcluidos.insert(nodesTrip[i + 1].id);
+
+                nodesTrip.erase(nodesTrip.begin() + i);
+                nodesTrip.erase(nodesTrip.begin() + i);
+
+                // cout << "size depois: " << nodesTrip.size() << endl;
+                // printNodes(nodesTrip);
+
+                // cout << "ANTES: " << endl;
+
+                // solCopia[indexTrip]->dadosTrip();
+                // solCopia[indexTrip]->dadosNodes();
+                // cout << "SCORE ANTIGO: " << scoreAntigo << endl;
+
+                solCopia[indexTrip]->setNodes(nodesTrip);
+                float lengthTrip = calcTripLength(data, solCopia[indexTrip]->getStartHotel(), solCopia[indexTrip]->getEndHotel(), nodesTrip);
+                solCopia[indexTrip]->setCurrentLength(lengthTrip);
+
+                // cout << "DEPOIS: " << endl;
+                // solCopia[indexTrip]->dadosTrip();
+                // solCopia[indexTrip]->dadosNodes();
+                float scoreNovo = getScoreTour(data, solCopia);
+                // cout << "SCORE NOVO: " << scoreNovo << endl;
+
+                // nos removidos e solucao atualizada, agr mando pro insert para tentar melhorar
+                insert(data, solCopia, gen, nosExcluidos);
+
+                scoreNovo = getScoreTour(data, solCopia);
+
+                if (scoreNovo > scoreAntigo)
+                {
+                    // cout << "Melhorou alguma coisa..." << endl;
+                    solution = solCopia;
+                }
+                // cout << "DEPOIS ATUALIZAR SOL: " << endl;
+                // solCopia[indexTrip]->dadosTrip();
+                // solCopia[indexTrip]->dadosNodes();
+                // cout << "SCORE NOVO APOS INSERT: " << scoreNovo << endl;
+            }
+        }
+        // cout << " PROXIMA ITERAÇÃO" << endl;
+        // exit(0);
+    }
+
+    return solution;
+}
+
+/*
+    tenta trocar entre trips consecutivas
+*/
+Trip **exchange(OPHS *data, Trip **solution, mt19937 *gen)
+{
+    // indexTrip, indexNoI, indexNoJ, increseLength
+    vector<tuple<int, int, int, float>> candidatosInverter; // salva apenas os que diminuir a distancia, então posso pegar o que der a menor
+
+    for (int indexTrip = 0; indexTrip < data->getNumTrips() - 1; indexTrip++)
+    {
+        vector<Node> nodesTripI = solution[indexTrip]->getNodes();
+        vector<Node> nodesTripJ = solution[indexTrip + 1]->getNodes();
+
+        float lengthTripIOld = calcTripLength(data, solution[indexTrip]->getStartHotel(), solution[indexTrip]->getEndHotel(), nodesTripI);
+        float lengthTripJOld = calcTripLength(data, solution[indexTrip]->getStartHotel(), solution[indexTrip]->getEndHotel(), nodesTripJ);
+
+        for (int i = 0; i < nodesTripI.size(); i++)
+        {
+            for (int j = 0; j < nodesTripJ.size(); j++)
+            {
+
+                Node nodeAux = nodesTripI[i];
+                nodesTripI[i] = nodesTripI[j];
+                nodesTripJ[j] = nodeAux;
+
+                float lengthTripI = calcTripLength(data, solution[indexTrip]->getStartHotel(), solution[indexTrip]->getEndHotel(), nodesTripI);
+                float lengthTripJ = calcTripLength(data, solution[indexTrip + 1]->getStartHotel(), solution[indexTrip + 1]->getEndHotel(), nodesTripJ);
+
+                if (lengthTripI < solution[indexTrip]->getTd() && lengthTripJ < solution[indexTrip + 1]->getTd())
+                {
+                    float increseLength = (lengthTripIOld + lengthTripJOld) - (lengthTripI + lengthTripJ);
+
+                    tuple<int, int, int, float> candidato = std::make_tuple(indexTrip, i, j, increseLength);
+                    candidatosInverter.push_back(candidato);
+
+                    // cout << " index trip: " << indexTrip << " i: " << i << " j: " << j << " increseLength: " << increseLength << endl;
+                    // exit(0);
+                }
+
+                nodeAux = nodesTripI[j];
+                nodesTripI[j] = nodesTripI[i];
+                nodesTripI[i] = nodeAux;
+            }
+        }
+    }
+
+    std::sort(candidatosInverter.begin(), candidatosInverter.end(), compareExchange);
+
+    for (int i = 0; i < candidatosInverter.size(); i++)
+    {
+        // indexTrip, indexNoI, indexNoJ, increseLength
+        cout << "indexTrip: " << get<0>(candidatosInverter[i]);
+        cout << " indexNoI: " << get<1>(candidatosInverter[i]);
+        cout << " indexNoJ: " << get<2>(candidatosInverter[i]);
+        cout << " increseLength: " << get<3>(candidatosInverter[i]) << endl;
+    }
+    if (candidatosInverter.size() > 0)
+    {
+        cout << " Tem candidatos...." << endl;
+
+        int idxTripI = get<0>(candidatosInverter[0]);
+        int idxNoI = get<1>(candidatosInverter[0]);
+        int idxNoJ = get<2>(candidatosInverter[0]);
+
+        vector<Node> nosTripI = solution[idxTripI]->getNodes();
+        vector<Node> nosTripJ = solution[idxTripI + 1]->getNodes();
+
+        Node nodeAux = nosTripI[idxNoI];
+        nosTripI[idxNoI] = nosTripJ[idxNoJ];
+        nosTripJ[idxNoJ] = nodeAux;
+
+        solution[idxTripI]->setNodes(nosTripI);
+        solution[idxTripI + 1]->setNodes(nosTripJ);
+
+        float lengthTripI = calcTripLength(data, solution[idxTripI]->getStartHotel(), solution[idxTripI]->getEndHotel(), nosTripI);
+        float lengthTripJ = calcTripLength(data, solution[idxTripI + 1]->getStartHotel(), solution[idxTripI + 1]->getEndHotel(), nosTripJ);
+
+        solution[idxTripI]->setCurrentLength(lengthTripI);
+        solution[idxTripI + 1]->setCurrentLength(lengthTripJ);
+
+        printTrips(data, solution);
+
+        exit(0);
     }
 
     return solution;
@@ -452,13 +623,13 @@ Trip **twoOpt(OPHS *data, Trip **solution, mt19937 *gen)
 
         if (std::get<0>(candidatoInverter) != -1)
         {
-            cout << "Trocando ";
-            cout << "Trip " << indexTrip;
-            cout << " i: " << std::get<0>(candidatoInverter);
-            cout << " j " << std::get<1>(candidatoInverter);
-            cout << " antigoD: " << antigaDistancia;
-            cout << " melhorD " << std::get<2>(candidatoInverter) << endl
-                 << endl;
+            // cout << "Trocando ";
+            // cout << "Trip " << indexTrip;
+            // cout << " i: " << std::get<0>(candidatoInverter);
+            // cout << " j " << std::get<1>(candidatoInverter);
+            // cout << " antigoD: " << antigaDistancia;
+            // cout << " melhorD " << std::get<2>(candidatoInverter) << endl
+            //      << endl;
 
             // cout << "antes: " << endl;
             // solution[indexTrip]->dadosTrip();
@@ -488,6 +659,7 @@ float updateTemperature(float T)
 Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, float T, float Tmin, mt19937 *gen)
 {
     Trip **bestSolution = initialSolution;
+    set<int> vazio;
 
     int iteracoesT = 0;
     while (T > Tmin)
@@ -496,9 +668,12 @@ Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, fl
         while (iter < iterations)
         {
             Trip **copySolution = makeCopySolution(data, initialSolution);
-            Trip **neighborSolution = twoOpt(data, copySolution, gen);
-            neighborSolution = insert(data, neighborSolution, gen);
-            neighborSolution = generateRandomNeighbor2(data, neighborSolution, gen);
+            Trip **neighborSolution = generateRandomNeighbor2(data, copySolution, gen);
+            // neighborSolution = insert(data, neighborSolution, gen, vazio);
+            // neighborSolution = generateRandomNeighbor2(data, neighborSolution, gen);
+
+            // neighborSolution = exchange(data, neighborSolution, gen);
+            // neighborSolution = extract2Insert(data, neighborSolution, gen);
 
             float neighborSolutionScore = getScoreTour(data, neighborSolution);
             float initialSolutionScore = getScoreTour(data, initialSolution);
@@ -515,7 +690,8 @@ Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, fl
                 if (neighborSolutionScore > bestTotalScore)
                 {
                     bestSolution = neighborSolution;
-                    cout << "Achou sol melhor..."<<"Qualidade: "<< neighborSolutionScore<< endl;
+                    cout << "Achou sol melhor..."
+                         << "Qualidade: " << neighborSolutionScore << endl;
                 }
             }
             else
