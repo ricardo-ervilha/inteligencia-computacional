@@ -13,10 +13,11 @@ int main()
     cout << "SEED: " << seed << endl;
 
     string instance_folder = "../instances/OPHS_instances_February 2013/";
-    string instance_name = "SET4/100-20-3-2";
+    string instance_name = "SET1 1-2/64-45-1-2";
 
     OPHS *data = read_input(instance_folder + instance_name + ".ophs");
 
+    auto start = std::chrono::high_resolution_clock::now();
     greedy_randomized_adaptive_reactive_procedure(data, &gen);
 
     printTrips(data, data->getTrips());
@@ -35,8 +36,12 @@ int main()
     cout << "SOLUCAO: " << scoreSolInicial << endl;
     cout << "SEED: " << seed << endl;
     Trip **novaSolucao = simulatedAnnealing(data, solucaoInicial, iteracoes, temperaturaInicial, temperaturaFinal, &gen);
-   
-    cout << "Saiu simulated\n";
+    
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Tempo decorrido: " << duration.count() << " ms" << std::endl;
+    
+    // cout << "Saiu simulated\n";
     float scoreNovaSol = getScoreTour(data, novaSolucao);
     cout << "SOLUCAO SA: " << scoreNovaSol << endl;
     cout << "Melhora de : " << ((scoreNovaSol / scoreSolInicial) - 1) * 100 << " %" << endl;
