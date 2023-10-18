@@ -4,6 +4,7 @@
 #include <vector>
 #include <cstring>
 #include <random>
+#include <set>
 
 using namespace std;
 
@@ -49,36 +50,52 @@ int intRandom(int min, int max, mt19937 *gen)
 
 Trip **makeCopySolution(OPHS *data, Trip **initialSolution)
 {
-   
     Trip **copyTrips = new Trip *[data->getNumTrips()];
 
     // inicializar as trips
     for (int i = 0; i < data->getNumTrips(); i++)
     {
-        
+
         copyTrips[i] = new Trip(data->getTrips()[i]->getTd()); // Td   = trip max length for each trip d
-        
+
         copyTrips[i]->setStartHotel(initialSolution[i]->getStartHotel());
-        
+
         copyTrips[i]->setEndHotel(initialSolution[i]->getEndHotel());
-        
+
         copyTrips[i]->updateCurrentLength(initialSolution[i]->getCurrentLength());
-        
+
         copyTrips[i]->setNodes(initialSolution[i]->getNodes());
     }
 
     return copyTrips;
 }
 
-float getScoreTour(OPHS *data, Trip **trips)
+set<int> getIdsInSolution(OPHS *data, Trip **solution)
 {
-    float totalScore = 0;
+    set<int> idsInSolution;
     for (int i = 0; i < data->getNumTrips(); i++)
     {
-        totalScore += trips[i]->getScoreTrip();
+        for (const Node &node : solution[i]->getNodes())
+        {
+            idsInSolution.insert(node.id);
+        }
     }
 
-    return totalScore;
+    return idsInSolution;
+}
+
+vector<int> getIdsNotInSolution(OPHS *data, set<int> idsInSolution)
+{
+    vector<int> idsNotInSolution;
+    for (int i = data->getNumExtraHotels() + 2; i < data->getNumExtraHotels() + data->getNumVertices(); i++)
+    {
+        if (idsInSolution.find(data->getVertex(i).id) == idsInSolution.end())
+        {
+            idsNotInSolution.push_back(data->getVertex(i).id);
+        }
+    }
+
+    return idsNotInSolution;
 }
 
 float calcTripLength(OPHS *data, Trip *trip)
@@ -117,7 +134,36 @@ float calcTripLength(OPHS *data, int startHotel, int endHotel, vector<Node> nos)
     return lengthTrip;
 }
 
-float calcTripScore(vector<Node> nodesTrip)
+bool isTripFeasible(OPHS *data, Trip *trip)
+{
+    float lengthTrip = calcTripLength(data, trip);
+    cout << "1. Tamanho máximo da trip: " << trip->getTd();
+    cout << " - Tamanho da trip: " << lengthTrip << endl;
+
+    return lengthTrip <= trip->getTd();
+}
+
+bool isTripFeasible(OPHS *data, Trip *trip, vector<Node> nos)
+{
+    float lengthTrip = calcTripLength(data, trip->getStartHotel(), trip->getEndHotel(), nos);
+    cout << "2. Tamanho máximo da trip: " << trip->getTd();
+    cout << " - Tamanho da trip: " << lengthTrip << endl;
+
+    return lengthTrip <= trip->getTd();
+}
+
+float getScoreTour(OPHS *data, Trip **trips)
+{
+    float totalScore = 0;
+    for (int i = 0; i < data->getNumTrips(); i++)
+    {
+        totalScore += trips[i]->getScoreTrip();
+    }
+
+    return totalScore;
+}
+
+float getTripScore(vector<Node> nodesTrip)
 {
     float totalScore = 0;
     for (int i = 0; i < nodesTrip.size(); i++)
@@ -192,4 +238,47 @@ void printIdsTrips(OPHS *data, Trip **trips)
     }
 }
 
+void printNodes(vector<Node> nodesTrip)
+{
+    float totalScore = 0;
+    for (int i = 0; i < nodesTrip.size(); i++)
+    {
+        cout << "\t" << nodesTrip[i].id << " ";
+        totalScore += nodesTrip[i].score;
+    }
+    cout << endl;
+    cout << "\tScore trip: " << totalScore << endl;
+}
+
+bool compareById(Node i, Node j)
+{
+    return (i.id == j.id);
+}
+
+bool equalSolution(OPHS *data, Trip **sol1, Trip **sol2)
+{
+    for (int i = 0; i < data->getNumTrips(); i++)
+    {
+
+        if (sol1[i]->getNodes().size() != sol2[i]->getNodes().size() ||
+            !std::equal(sol1[i]->getNodes().begin(), sol1[i]->getNodes().end(), sol2[i]->getNodes().begin(), compareById))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool equalTrip(OPHS *data, vector<Node> t1, vector<Node> t2)
+{
+    for (int i = 0; i < data->getNumTrips(); i++)
+    {
+        if (t1.size() != t2.size() ||
+            !std::equal(t1.begin(), t1.end(), t2.begin(), compareById))
+        {
+            return false;
+        }
+    }
+    return true;
+}
 #endif
