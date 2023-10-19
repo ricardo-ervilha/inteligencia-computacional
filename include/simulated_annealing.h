@@ -54,6 +54,49 @@ float updateTemperature(float T)
     return 0.99 * T;
 }
 
+Trip **applyRandomMovement(OPHS *data, Trip **neighborSolution, mt19937 *gen)
+{
+    /*
+        0. generateRandomNeighbor
+        1. twoOpt
+        2. generateRandomNeighbor2
+        3. insert
+    */
+    set<int> vazio;
+    int randomMovement = intRandom(0, 3, gen);
+    // cout <<"randomMovement: "<<randomMovement<<endl;
+    if (randomMovement == 0)
+    {
+        // cout << "Aplicando generateRandomNeighbor" << endl;
+        return generateRandomNeighbor(data, neighborSolution, gen);
+    }
+
+    if (randomMovement == 1)
+    {
+        // cout << "Aplicando twoOpt" << endl;
+        return twoOpt(data, neighborSolution, gen);
+    }
+
+    if (randomMovement == 2)
+    {
+        // cout << "Aplicando generateRandomNeighbor2" << endl;
+        return generateRandomNeighbor2(data, neighborSolution, gen);
+    }
+
+    if (randomMovement == 3)
+    {
+        // cout << "Aplicando insert: " << endl;
+        Trip **solCopia = makeCopySolution(data, neighborSolution);
+        Trip **sol = insert(data, neighborSolution, gen, vazio);
+
+        if (sol == nullptr)
+            return solCopia;
+        else
+            return sol;
+    }
+    return nullptr;
+}
+
 /// @brief Gera uma solução vizinha de uma solução inicial com SA
 /// @param data
 /// @param initialSolution solução inicial
@@ -74,25 +117,31 @@ Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, fl
         {
             Trip **copySolution = makeCopySolution(data, initialSolution);
 
-            Trip **neighborSolution = generateRandomNeighbor(data, copySolution, gen);
+            // cout << "ANTES EXTRACT: " << endl;
+            // printIdsTrips(data, copySolution);
+
+            Trip **neighborSolution = extract2Insert(data, copySolution, gen);
+            neighborSolution = applyRandomMovement(data, neighborSolution, gen);
+            // neighborSolution = applyRandomMovement(data, neighborSolution, gen);
             // neighborSolution = insert(data, neighborSolution, gen, vazio);
             // neighborSolution = generateRandomNeighbor2(data, neighborSolution, gen);
             // neighborSolution = exchange(data, neighborSolution, gen);
             // neighborSolution = extract2Insert(data, neighborSolution, gen);
+            // cout << "DEPOIS EXTRACT: " << endl;
+            // printIdsTrips(data, neighborSolution);
 
             float neighborSolutionScore = getScoreTour(data, neighborSolution);
             float initialSolutionScore = getScoreTour(data, initialSolution);
 
             // if (neighborSolutionScore == initialSolutionScore)
             // {
-            //     // cout << "mesma qualidade: " << neighborSolutionScore << endl;
-
+            //     // cout << "Mesma qualidade: "<<iter<< endl;
             //     if (equalSolution(data, initialSolution, neighborSolution))
             //     {
-            //         // cout << "solução igual..." << endl;
+            //         // cout << "Mesma solução: " << iter << endl;
+            //         neighborSolution = applyRandomMovement(data, neighborSolution, gen);
             //     }
             // }
-
 
             float deltaE = neighborSolutionScore - initialSolutionScore;
 
@@ -107,7 +156,7 @@ Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, fl
                 {
                     bestSolution = neighborSolution;
                     cout << "Achou sol melhor..."
-                         << "Qualidade: " << neighborSolutionScore << endl;
+                         << "iter: " << iter << " Qualidade: " << neighborSolutionScore << endl;
                 }
             }
             else
@@ -130,7 +179,7 @@ Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, fl
         }
         iteracoesT++;
         T = updateTemperature(T);
-        if (iteracoesT % 150 == 0)
+        if (iteracoesT % 100 == 0)
             cout << "IteracaoTemperatura: " << iteracoesT << " Temperatura: " << T << " Qualida da best: " << getScoreTour(data, bestSolution) << endl;
     }
     return bestSolution;

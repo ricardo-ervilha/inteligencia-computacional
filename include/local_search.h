@@ -236,15 +236,15 @@ Trip **insert(OPHS *data, Trip **solution, mt19937 *gen, set<int> nosExcluidos)
     // printCandidatosInsert(candidatosGerados);
 
     // <indexTrip, indexNo, idxVertexAdd, incrementoDistancia, ratio = score/incrementoDistancia>
-    if (candidatosGerados.size() > 1)
+    if (candidatosGerados.size() > 0)
     {
-        cout << "Inserindo ";
-        cout << " indexTrip: " << std::get<0>(candidatosGerados[0]);
-        cout << " indexNo " << std::get<1>(candidatosGerados[0]);
-        cout << " idxVertexAdd: " << std::get<2>(candidatosGerados[0]);
-        cout << " incrementoDistancia: " << std::get<3>(candidatosGerados[0]);
-        cout << " ratio " << std::get<4>(candidatosGerados[0]) << endl
-             << endl;
+        // cout << "Inserindo ";
+        // cout << " indexTrip: " << std::get<0>(candidatosGerados[0]);
+        // cout << " indexNo " << std::get<1>(candidatosGerados[0]);
+        // cout << " idVertexAdd: " << std::get<2>(candidatosGerados[0]);
+        // cout << " incrementoDistancia: " << std::get<3>(candidatosGerados[0]);
+        // cout << " ratio " << std::get<4>(candidatosGerados[0]) << endl
+        //      << endl;
 
         int idxAddTrip = std::get<0>(candidatosGerados[0]);
         int idxAddNo = std::get<1>(candidatosGerados[0]);
@@ -265,11 +265,10 @@ Trip **insert(OPHS *data, Trip **solution, mt19937 *gen, set<int> nosExcluidos)
     }
     else
     {
-        return solution;
+        return nullptr;
     }
 }
 
-// pode estar errada
 // tenta inserir 2 caras da trip e adicionar outros com insert
 Trip **extract2Insert(OPHS *data, Trip **solution, mt19937 *gen)
 {
@@ -279,6 +278,7 @@ Trip **extract2Insert(OPHS *data, Trip **solution, mt19937 *gen)
         Trip **solCopia = makeCopySolution(data, solution);
         vector<Node> nodesTrip = solCopia[indexTrip]->getNodes();
 
+        set<int> nosExcluidos;
         if (solCopia[indexTrip]->getNodes().size() > 2)
         {
             for (int i = 0; i < solCopia[indexTrip]->getNodes().size() - 1; i++)
@@ -287,20 +287,20 @@ Trip **extract2Insert(OPHS *data, Trip **solution, mt19937 *gen)
                 solCopia = makeCopySolution(data, solution);
                 float scoreAntigo = getScoreTour(data, solCopia);
 
-                set<int> nosExcluidos;
                 nodesTrip = solCopia[indexTrip]->getNodes();
 
-                // cout << "size antes: " << nodesTrip.size() << endl;
+                // cout << "Trip: " << indexTrip << " Tamanho" << nodesTrip.size() << endl;
                 // printNodes(nodesTrip);
 
                 // tenta remover i e i+1
+                // cout << "Extraindo: " << nodesTrip[i].id << " e " << nodesTrip[i + 1].id << endl;
                 nosExcluidos.insert(nodesTrip[i].id);
                 nosExcluidos.insert(nodesTrip[i + 1].id);
 
                 nodesTrip.erase(nodesTrip.begin() + i);
                 nodesTrip.erase(nodesTrip.begin() + i);
 
-                // cout << "size depois: " << nodesTrip.size() << endl;
+                // cout << "Trip: " << indexTrip << " i: " << i << " Tamanho: " << nodesTrip.size() << endl;
                 // printNodes(nodesTrip);
 
                 // cout << "ANTES: " << endl;
@@ -320,13 +320,17 @@ Trip **extract2Insert(OPHS *data, Trip **solution, mt19937 *gen)
                 // cout << "SCORE NOVO: " << scoreNovo << endl;
 
                 // nos removidos e solucao atualizada, agr mando pro insert para tentar melhorar
+                while (insert(data, solCopia, gen, nosExcluidos) != nullptr)
+                    ;
 
-                insert(data, solCopia, gen, nosExcluidos);
+                // cout << "DEPOIS INSERT" << endl;
+                // printNodes(solCopia[indexTrip]->getNodes());
 
                 scoreNovo = getScoreTour(data, solCopia);
 
                 if (scoreNovo > scoreAntigo)
                 {
+                    i = 0;
                     // cout << "Melhorou alguma coisa..." << endl;
                     solution = solCopia;
                 }
@@ -334,6 +338,7 @@ Trip **extract2Insert(OPHS *data, Trip **solution, mt19937 *gen)
                 // solCopia[indexTrip]->dadosTrip();
                 // solCopia[indexTrip]->dadosNodes();
                 // cout << "SCORE NOVO APOS INSERT: " << scoreNovo << endl;
+                // cout << "-----------------------------------------------" << endl;
             }
         }
         // cout << " PROXIMA ITERAÇÃO" << endl;
@@ -486,13 +491,13 @@ Trip **twoOpt(OPHS *data, Trip **solution, mt19937 *gen)
 
         if (std::get<0>(candidatoInverter) != -1)
         {
-            cout << "Trocando ";
-            cout << "Trip " << indexTrip;
-            cout << " i: " << std::get<0>(candidatoInverter);
-            cout << " j " << std::get<1>(candidatoInverter);
-            cout << " antigoD: " << antigaDistancia;
-            cout << " melhorD " << std::get<2>(candidatoInverter) << endl
-                 << endl;
+            // cout << "Trocando ";
+            // cout << "Trip " << indexTrip;
+            // cout << " i: " << std::get<0>(candidatoInverter);
+            // cout << " j " << std::get<1>(candidatoInverter);
+            // cout << " antigoD: " << antigaDistancia;
+            // cout << " melhorD " << std::get<2>(candidatoInverter) << endl
+            //      << endl;
 
             // cout << "antes: " << endl;
             // solution[indexTrip]->dadosTrip();

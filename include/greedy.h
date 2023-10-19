@@ -432,7 +432,7 @@ void atualizaProbabilidades(float *q, float *probabilidades, int tamAlfa){
 void greedy_randomized_adaptive_reactive_procedure(OPHS *data, mt19937 *gen)
 {   
     time_t val = time(NULL);
-    srand(val);
+    srand(1697685987);
     cout << "Seed do GRARP: " << val << endl;
 
     pre_processing(data); //preenche o tour com os hoteis iniciais.

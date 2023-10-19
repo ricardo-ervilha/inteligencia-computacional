@@ -255,13 +255,12 @@ bool compareById(Node i, Node j)
     return (i.id == j.id);
 }
 
-bool equalSolution(OPHS *data, Trip **sol1, Trip **sol2)
+bool equalTrip(OPHS *data, vector<Node> t1, vector<Node> t2)
 {
     for (int i = 0; i < data->getNumTrips(); i++)
     {
-
-        if (sol1[i]->getNodes().size() != sol2[i]->getNodes().size() ||
-            !std::equal(sol1[i]->getNodes().begin(), sol1[i]->getNodes().end(), sol2[i]->getNodes().begin(), compareById))
+        if (t1.size() != t2.size() ||
+            !std::equal(t1.begin(), t1.end(), t2.begin(), compareById))
         {
             return false;
         }
@@ -269,12 +268,17 @@ bool equalSolution(OPHS *data, Trip **sol1, Trip **sol2)
     return true;
 }
 
-bool equalTrip(OPHS *data, vector<Node> t1, vector<Node> t2)
+bool equalSolution(OPHS *data, Trip **sol1, Trip **sol2)
 {
     for (int i = 0; i < data->getNumTrips(); i++)
     {
-        if (t1.size() != t2.size() ||
-            !std::equal(t1.begin(), t1.end(), t2.begin(), compareById))
+
+        // if (sol1[i]->getNodes().size() != sol2[i]->getNodes().size() ||
+        //     !std::equal(sol1[i]->getNodes().begin(), sol1[i]->getNodes().end(), sol2[i]->getNodes().begin(), compareById))
+        // {
+        //     return false;
+        // }
+        if (!equalTrip(data, sol1[i]->getNodes(), sol2[i]->getNodes()))
         {
             return false;
         }
