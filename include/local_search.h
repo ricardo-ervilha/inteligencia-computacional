@@ -150,12 +150,14 @@ Trip **generateRandomNeighbor2(OPHS *data, Trip **solution, mt19937 *gen)
         vector<Node> nodesTrip = solution[indexTrip]->getNodes();
         nodesTrip[indexNoRemover] = data->getVertex(idVertexAdd);
 
-        solution[indexTrip]->setNodes(nodesTrip);
-
         float lengthTrip = calcTripLength(data, solution[indexTrip]->getStartHotel(), solution[indexTrip]->getEndHotel(), nodesTrip);
 
-        solution[indexTrip]->setCurrentLength(lengthTrip);
-
+        if (lengthTrip <= solution[indexTrip]->getTd())
+        {
+            solution[indexTrip]->setNodes(nodesTrip);
+            solution[indexTrip]->setCurrentLength(lengthTrip);
+        }
+        
         return solution;
     }
     else
@@ -258,7 +260,6 @@ Trip **insert(OPHS *data, Trip **solution, mt19937 *gen, set<int> nosExcluidos)
         float lengthTrip = calcTripLength(data, solution[idxAddTrip]->getStartHotel(), solution[idxAddTrip]->getEndHotel(), solution[idxAddTrip]->getNodes());
         solution[idxAddTrip]->setCurrentLength(lengthTrip);
 
-        // cout << "DEPPOIS " << endl;
         // solution[idxAddTrip]->dadosTrip();
         // solution[idxAddTrip]->dadosNodes();
         return solution;
@@ -273,12 +274,12 @@ Trip **insert(OPHS *data, Trip **solution, mt19937 *gen, set<int> nosExcluidos)
 Trip **extract2Insert(OPHS *data, Trip **solution, mt19937 *gen)
 {
     // Para cada Trip, começo do primeiro vertice e removo 2 nos consecutivos
+    set<int> nosExcluidos;
     for (int indexTrip = 0; indexTrip < data->getNumTrips(); indexTrip++)
     {
         Trip **solCopia = makeCopySolution(data, solution);
         vector<Node> nodesTrip = solCopia[indexTrip]->getNodes();
 
-        set<int> nosExcluidos;
         if (solCopia[indexTrip]->getNodes().size() > 2)
         {
             for (int i = 0; i < solCopia[indexTrip]->getNodes().size() - 1; i++)
@@ -309,36 +310,43 @@ Trip **extract2Insert(OPHS *data, Trip **solution, mt19937 *gen)
                 // solCopia[indexTrip]->dadosNodes();
                 // cout << "SCORE ANTIGO: " << scoreAntigo << endl;
 
-                solCopia[indexTrip]->setNodes(nodesTrip);
                 float lengthTrip = calcTripLength(data, solCopia[indexTrip]->getStartHotel(), solCopia[indexTrip]->getEndHotel(), nodesTrip);
-                solCopia[indexTrip]->setCurrentLength(lengthTrip);
 
-                // cout << "DEPOIS: " << endl;
-                // solCopia[indexTrip]->dadosTrip();
-                // solCopia[indexTrip]->dadosNodes();
-                float scoreNovo = getScoreTour(data, solCopia);
-                // cout << "SCORE NOVO: " << scoreNovo << endl;
-
-                // nos removidos e solucao atualizada, agr mando pro insert para tentar melhorar
-                while (insert(data, solCopia, gen, nosExcluidos) != nullptr)
-                    ;
-
-                // cout << "DEPOIS INSERT" << endl;
-                // printNodes(solCopia[indexTrip]->getNodes());
-
-                scoreNovo = getScoreTour(data, solCopia);
-
-                if (scoreNovo > scoreAntigo)
+                if (lengthTrip <= solCopia[indexTrip]->getTd())
                 {
-                    i = 0;
-                    // cout << "Melhorou alguma coisa..." << endl;
-                    solution = solCopia;
+                    solCopia[indexTrip]->setNodes(nodesTrip);
+                    solCopia[indexTrip]->setCurrentLength(lengthTrip);
+
+                    // cout << "DEPOIS: " << endl;
+                    // solCopia[indexTrip]->dadosTrip();
+                    // solCopia[indexTrip]->dadosNodes();
+                    float scoreNovo = getScoreTour(data, solCopia);
+                    // cout << "SCORE NOVO: " << scoreNovo << endl;
+
+                    // nos removidos e solucao atualizada, agr mando pro insert para tentar melhorar
+                    // cout << "Trip: " << indexTrip << " ANTES INSERT EXTRACT2..." << lengthTrip << endl;
+                   
+
+                    while (insert(data, solCopia, gen, nosExcluidos) != nullptr)
+                        ;
+
+                    // cout << "Trip: " << indexTrip << " DEPOIS INSERT EXTRACT2..." << calcTripLength(data, solCopia[indexTrip]->getStartHotel(), solCopia[indexTrip]->getEndHotel(), solCopia[indexTrip]->getNodes()) << endl;
+            
+
+                    scoreNovo = getScoreTour(data, solCopia);
+
+                    if (scoreNovo > scoreAntigo)
+                    {
+                        // cout << "Melhorou alguma coisa...Size Trip " << indexTrip << " " << lengthTrip << endl;
+                        solution = solCopia;
+                        i = 0;
+                    }
+                   
+                    // cout << "DEPOIS ATUALIZAR SOL: " << endl;
+                    // solCopia[indexTrip]->dadosTrip();
+                    // solCopia[indexTrip]->dadosNodes();
+                    // cout << "SCORE NOVO APOS INSERT: " << scoreNovo << endl;
                 }
-                // cout << "DEPOIS ATUALIZAR SOL: " << endl;
-                // solCopia[indexTrip]->dadosTrip();
-                // solCopia[indexTrip]->dadosNodes();
-                // cout << "SCORE NOVO APOS INSERT: " << scoreNovo << endl;
-                // cout << "-----------------------------------------------" << endl;
             }
         }
         // cout << " PROXIMA ITERAÇÃO" << endl;

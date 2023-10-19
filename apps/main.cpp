@@ -9,7 +9,7 @@ using namespace std;
 int main()
 {
     unsigned int seed = chrono::system_clock::now().time_since_epoch().count();
-    mt19937 gen(1147829749); // gerador de números aleatórios com a semente
+    mt19937 gen(seed); // gerador de números aleatórios com a semente
     cout << "SEED: " << seed << endl;
 
     string instance_folder = "../instances/OPHS_instances_February 2013/";
