@@ -213,6 +213,31 @@ void load_solution(string solutionPath, OPHS *data)
     }
 }
 
+void writeTrips(OPHS *data, Trip **trips, string filename)
+{
+    cout << "FILENAME: " << filename << endl;
+    std::ofstream outputFile(filename);
+    if (!outputFile)
+    {
+        std::cerr << "Failed to open the file for writing." << std::endl;
+        exit(0);
+    }
+
+    for (int i = 0; i < data->getNumTrips(); i++)
+    {
+        vector<Node> nodesTrip = trips[i]->getNodes();
+
+        outputFile << trips[i]->getStartHotel()<<" ";
+        for (int j = 0; j < nodesTrip.size(); j++)
+        {
+            outputFile << nodesTrip[j].id << " ";
+        }
+        outputFile << trips[i]->getEndHotel() << endl;
+    }
+
+    outputFile.close();
+}
+
 void printTrips(OPHS *data, Trip **trips)
 {
     cout << endl;

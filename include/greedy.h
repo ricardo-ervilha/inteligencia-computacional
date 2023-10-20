@@ -63,18 +63,18 @@ vector<int> construct_initial_tour_backward(OPHS *data, int ***matrix){
     }
     hoteis.push_back(0);
     reverse(hoteis.begin(), hoteis.end());
-    cout << ">>>>>>Tour:";
-    for(int i = 0; i < hoteis.size(); i++){
-        if(i % 2 == 0)
-            cout << hoteis[i] << " ";
-        else
-        {
-            if(i != hoteis.size()-1)
-                cout << hoteis[i] << ", ";
-            else
-                cout << hoteis[i] << endl;
-        }            
-    }
+    // cout << ">>>>>>Tour:";
+    // for(int i = 0; i < hoteis.size(); i++){
+    //     if(i % 2 == 0)
+    //         cout << hoteis[i] << " ";
+    //     else
+    //     {
+    //         if(i != hoteis.size()-1)
+    //             cout << hoteis[i] << ", ";
+    //         else
+    //             cout << hoteis[i] << endl;
+    //     }            
+    // }
 
     return hoteis;
 }
@@ -112,18 +112,18 @@ vector<int> construct_initial_tour_forward(OPHS *data, int ***matrix){
         cont++;
     }
     hoteis.push_back(1);
-    cout << ">>>>>>Tour: ";
-    for(int i = 0; i < hoteis.size(); i++){
-        if(i % 2 == 0)
-            cout << hoteis[i] << " ";
-        else
-        {
-            if(i != hoteis.size()-1)
-                cout << hoteis[i] << ", ";
-            else
-                cout << hoteis[i] << endl;
-        }            
-    }
+    // cout << ">>>>>>Tour: ";
+    // for(int i = 0; i < hoteis.size(); i++){
+    //     if(i % 2 == 0)
+    //         cout << hoteis[i] << " ";
+    //     else
+    //     {
+    //         if(i != hoteis.size()-1)
+    //             cout << hoteis[i] << ", ";
+    //         else
+    //             cout << hoteis[i] << endl;
+    //     }            
+    // }
 
     return hoteis;
 
@@ -210,18 +210,18 @@ void pre_processing(OPHS *data){
 
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout << "Tempo decorrido: " << duration.count() << " ms" << std::endl;
-    for(int k = 0; k < data->getNumTrips(); k++){
-        cout << "Trip: " << k << endl;
-        for(int i = 0; i < data->getNumExtraHotels() + 2; i++){
-            for(int j = 0; j < data->getNumExtraHotels() + 2; j++){
-                cout << matrix_pre_processing[i][j][k] << " ";
-            }
-            cout << endl;
-        }
-        cout << endl;
-        cout << endl;
-    }    
+    // std::cout << "Tempo decorrido: " << duration.count() << " ms" << std::endl;
+    // for(int k = 0; k < data->getNumTrips(); k++){
+    //     cout << "Trip: " << k << endl;
+    //     for(int i = 0; i < data->getNumExtraHotels() + 2; i++){
+    //         for(int j = 0; j < data->getNumExtraHotels() + 2; j++){
+    //             cout << matrix_pre_processing[i][j][k] << " ";
+    //         }
+    //         cout << endl;
+    //     }
+    //     cout << endl;
+    //     cout << endl;
+    // }    
 
     vector<int> hoteis = construct_initial_tour_forward(data, matrix_pre_processing);
     data->getTrip(0)->setStartHotel(0);
@@ -381,12 +381,12 @@ Trip** constructive_algorithm(OPHS *data, mt19937 *gen, float alfa) {
         
     }
     int totalScore = 0;
-    for(int i = 0; i < data->getNumTrips(); i++){
-        data->getTrip(i)->dadosTrip();
-        data->getTrip(i)->dadosNodes();
-        totalScore +=  data->getTrip(i)->getScoreTrip();
-    }
-    cout << totalScore << endl;
+    // for(int i = 0; i < data->getNumTrips(); i++){
+    //     data->getTrip(i)->dadosTrip();
+    //     data->getTrip(i)->dadosNodes();
+    //     totalScore +=  data->getTrip(i)->getScoreTrip();
+    // }
+    // cout << totalScore << endl;
 
     return data->getTrips();
 }
@@ -395,7 +395,7 @@ int sorteia_alfa(float *probAlfas, int tamAlfas){
     //Usando probabilidade acumulada.
     double random_number = rand() / (float)RAND_MAX;
     
-    cout << random_number << endl;
+    // cout << random_number << endl;
     
     float val_acumulado = 0;
     int i;
@@ -495,10 +495,10 @@ void greedy_randomized_adaptive_reactive_procedure(OPHS *data, mt19937 *gen)
         copia = makeCopySolution(data, data->getTrips());
         
     }
-    printTrips(data, melhor);
-    cout << "Só para comparação: " << getScoreTour(data, melhor) << endl;
+    // printTrips(data, melhor);
+    // cout << "Só para comparação: " << getScoreTour(data, melhor) << endl;
     data->setTrips(melhor);
-    cout << "Score do melhor: " << scoreMelhor << endl;
+    // cout << "Score do melhor: " << scoreMelhor << endl;
     cout << "Seed do GRARP: " << val << endl;
 }
 
