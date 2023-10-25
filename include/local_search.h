@@ -33,6 +33,9 @@ Trip **generateRandomNeighbor(OPHS *data, Trip **solution, mt19937 *gen)
         vector<Node> nodesTrip = solution[indexRandomTrip]->getNodes();   // nos da trip aleatoria
 
         // pega um no aleatório da trip [indexRandomTrip] - nodesTrip não tem os hoteis
+        if (nodesTrip.size() == 0)
+            continue;
+
         int indexRandomNodeRemover = intRandom(0, nodesTrip.size() - 1, gen); // index do no que vai ser removido
 
         for (int i = 0; i < idsNotInSolution.size(); i++)
