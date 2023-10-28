@@ -42,6 +42,8 @@ OPHS* read_input(string path)
             Trip* trip = new Trip(stof(v[i])); //Tamanho de cada trip
             trips[i] = trip;
         }
+        trips[0]->setStartHotel(0);
+        trips[numTrips - 1]->setEndHotel(1);
 
         getline(file, line);
 
@@ -55,7 +57,6 @@ OPHS* read_input(string path)
             nos[i].y = stof(v[1]); //coordenada y do hotel i
             nos[i].score = stoi(v[2]); //score do hotel i (problema implica ser zero)
             nos[i].id = i;
-            nos[i].vis = false;
         }
 
         for(int i = numExtraHotels + 2; i < numExtraHotels + numVertices; i++){
@@ -65,7 +66,6 @@ OPHS* read_input(string path)
             nos[i].x = stof(v[0]); //coordenada x do no i
             nos[i].y = stof(v[1]); //coordenada y do no i
             nos[i].score = stoi(v[2]); //score do hotel i
-            nos[i].vis = false;
             nos[i].id = i;
         }
 

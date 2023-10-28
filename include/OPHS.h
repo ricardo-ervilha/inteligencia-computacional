@@ -15,7 +15,7 @@ private:
     Trip **trips; //Guarda as trips do tour
     Node *vertex; //Guarda os hoteis e nós
     float **d_matrix; //Matriz com distâncias
-    int totalScore;
+    
 public:
     OPHS(int numVertices, int numExtraHotels, int numTrips, float totalTourLength, Node* vertex, float **d_matrix, Trip **trips){
         this->numVertices = numVertices;
@@ -45,12 +45,25 @@ public:
     void setTrips(Trip **trips) {this->trips = trips;};
     Trip* getTrip(int i)  {return this->trips[i];};
     float** getd_matrix()     {return this->d_matrix;};
-    int getTotalScoreTour()   {
-        int val = 0;
-        for(int i = 0; i < this->numTrips; i++){
-            val += trips[i]->getScoreTrip();
+    
+    void printDadosOPHS(){
+        std::cout << "-=-=-=-=-=-=-=-=-=-=-=-= Dados Gerais -=-=-=-=-=-=-=-=-=-=-=-=\n";
+        std::cout << "Número de vértices => "<< this->numVertices << std::endl;
+        std::cout << "Número de Extra Hoteis => "<< this->numExtraHotels << std::endl;
+        std::cout << "Número de Trips => "<< this->numTrips << std::endl;
+        std::cout << "Tamanho total do Tour => "<< this->totalTourLength << std::endl;
+        std::cout << "-------------------------------------------------------------\n";
+        
+        for(int i = 0; i < numTrips; i++){
+            cout << "@Trip " << i << endl;
+            trips[i]->dadosTrip();
+            trips[i]->dadosNodes();
+            std::cout << "-------------------------------------------------------------\n";
         }
-        return val;
+
+        cout << endl;
+        cout << endl;
+        
     }
 };
 

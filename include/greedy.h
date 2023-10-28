@@ -234,6 +234,8 @@ void pre_processing(OPHS *data){
         cont++;
     }
 
+    data->getTrip(data->getNumTrips() - 1)->setEndHotel(1);
+
     for (int i = 0; i < data->getNumExtraHotels() + 2; i++) {
         for (int j = 0; j < data->getNumExtraHotels() + 2; j++) {
             delete[] matrix_pre_processing[i][j];
@@ -265,7 +267,7 @@ vector<tuple<int, int, float, float>> generate_candidate_list_ap(OPHS *data, set
                 
                 float newDistance = trip->getCurrentLength() + incremento + distanceToEndHotel;
                 if(newDistance <= trip->getTd()){
-                    float beneficio = (data->getVertex(i).score / (incremento+distanceToEndHotel) ) * (trip->getTd() - incremento) ;
+                    float beneficio = (data->getVertex(i).score / (incremento) ) ;
                     tuple<int, int, float, float> candidato = std::make_tuple(i, 0, beneficio, incremento);
                     candidatos.push_back(candidato);
                 }
@@ -302,7 +304,7 @@ vector<tuple<int, int, float, float>> generate_candidate_list_ap(OPHS *data, set
                     float newDistance = trip->getCurrentLength() + incremento + distanceToEndHotel;
 
                     if(newDistance <= trip->getTd()){
-                        float beneficio = (data->getVertex(i).score / (incremento+distanceToEndHotel) ) * (trip->getTd() - incremento);
+                        float beneficio = (data->getVertex(i).score / (incremento) );
                         tuple<int, int, float, float> candidato = std::make_tuple(i, j, beneficio, incremento);
                         candidatos.push_back(candidato);
                     }
