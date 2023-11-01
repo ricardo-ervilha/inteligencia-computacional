@@ -3,6 +3,24 @@
 
 #include "util.h"
 
+// <indexTrip, indexNo, idxVertexAdd, incrementoDistancia, ratio = score/incrementoDistancia>
+void printCandidatosInsert(vector<tuple<int, int, int, float, float>> candidatosGerados)
+{
+    cout << "Candidatos Inser..." << endl;
+    for (const auto &tupla : candidatosGerados)
+    {
+        int indexTrip, indexNo, idVertexAdd;
+        float incrementoDistancia, ratio;
+        tie(indexTrip, indexNo, idVertexAdd, incrementoDistancia, ratio) = tupla;
+
+        cout << "Trip " << indexTrip;
+        cout << " indexNo " << indexNo;
+        cout << " idVertexAdd " << idVertexAdd;
+        cout << " incrementoDistancia: " << incrementoDistancia;
+        cout << " ratio " << ratio << endl;
+    }
+}
+
 //  <indexTrip, indexNoRemover, idVertexAdd, novoScore, novaDistancia>
 bool compare(tuple<int, int, int, float, float> a, tuple<int, int, int, float, float> b)
 {
@@ -10,6 +28,10 @@ bool compare(tuple<int, int, int, float, float> a, tuple<int, int, int, float, f
 }
 
 // <indexTrip, indexNo, idxVertexAdd, incrementoDistancia, ratio = score/incrementoDistancia>
+
+// Among the vertices for which the insertion does not make the trip
+// infeasible, the vertex with maximum ratio of score over this
+// increase is inserted.
 bool compareInsert(tuple<int, int, int, float, float> a, tuple<int, int, int, float, float> b)
 {
     return std::get<4>(a) > std::get<4>(b);
@@ -273,6 +295,103 @@ Trip **insert(OPHS *data, Trip **solution, mt19937 *gen, set<int> nosExcluidos)
     }
 }
 
+Trip **insertPlus(OPHS *data, Trip **solution, mt19937 *gen, set<int> nosExcluidos)
+{
+    // cout << "Aplicando insert" << endl;
+    set<int> idsInSolution = getIdsInSolution(data, solution);
+    for (const auto &el : nosExcluidos)
+    {
+        idsInSolution.insert(el);
+    }
+
+    vector<int> idsNotInSolutionOriginal = getIdsNotInSolution(data, idsInSolution);
+
+    // <indexTrip, indexNo, idxVertexAdd, incrementoDistancia, ratio = score/incrementoDistancia>
+    vector<tuple<int, int, int, float, float>> candidatosGerados;
+
+    // achar para cada vertice não incluido a posição que faz o menor incremento na distancia
+    for (int idxVertexAdd = 0; idxVertexAdd < idsNotInSolutionOriginal.size(); idxVertexAdd++)
+    {
+        Node noInserir = data->getVertex(idsNotInSolutionOriginal[idxVertexAdd]);
+
+        tuple<int, int, int, float, float> melhorCandidato = make_tuple(-1, -1, noInserir.id, 0.0, 0.0); // mantem o melhor candidato para determinado idxVertexAdd
+
+        for (int indexTrip = 0; indexTrip < data->getNumTrips(); indexTrip++)
+        {
+            vector<Node> nodesTrip = solution[indexTrip]->getNodes();
+            float antigaDistancia = calcTripLength(data, solution[indexTrip]->getStartHotel(), solution[indexTrip]->getEndHotel(), nodesTrip);
+
+            // tentar adicionar o no na trip em cada uma das posições
+            for (int indexNo = 0; indexNo < nodesTrip.size(); indexNo++)
+            {
+                vector<Node> nodesTripTemp = solution[indexTrip]->getNodes();
+
+                nodesTripTemp.insert(nodesTripTemp.begin() + indexNo, noInserir);
+
+                float novaDistancia = calcTripLength(data, solution[indexTrip]->getStartHotel(), solution[indexTrip]->getEndHotel(), nodesTripTemp);
+
+                if (novaDistancia <= solution[indexTrip]->getTd()) // verifica se é viável
+                {
+                    float incrementoDistancia = novaDistancia - antigaDistancia;
+                    float ratio = getTripScore(nodesTripTemp);
+                    if (incrementoDistancia != 0)
+                        ratio = ratio / incrementoDistancia;
+
+                    int indexTripTupla, indexNoTupla, idxVertexAddTupla;
+                    float incrementoDistanciaTupla, ratioTupla;
+
+                    std::tie(indexTripTupla, indexNoTupla, idxVertexAddTupla, incrementoDistanciaTupla, ratioTupla) = melhorCandidato;
+
+                    if (indexTripTupla == -1)
+                    { // primeiro candidato
+
+                        // <indexTrip, indexNo, idxVertexAdd, incrementoDistancia, ratio = score/incrementoDistancia>
+                        melhorCandidato = make_tuple(indexTrip, indexNo, noInserir.id, incrementoDistancia, ratio);
+                    }
+                    else if (incrementoDistancia <= incrementoDistanciaTupla) // substitui somente se tiver um incremento menor na distancia
+                    {
+                        // <indexTrip, indexNo, idxVertexAdd, incrementoDistancia, ratio = score/incrementoDistancia>
+                        melhorCandidato = make_tuple(indexTrip, indexNo, noInserir.id, incrementoDistancia, ratio);
+                    }
+                }
+            }
+        }
+        // encontrou pelo menos 1 candidato
+        if (get<0>(melhorCandidato) != -1)
+            candidatosGerados.push_back(melhorCandidato);
+    }
+    std::sort(candidatosGerados.begin(), candidatosGerados.end(), compareInsert);
+    // printCandidatosInsert(candidatosGerados);
+
+    // <indexTrip, indexNo, idxVertexAdd, incrementoDistancia, ratio = score/incrementoDistancia>
+    if (candidatosGerados.size() > 0)
+    {
+        for (int ci = 0; ci < candidatosGerados.size(); ci++)
+        {
+            int idxAddTrip = std::get<0>(candidatosGerados[ci]);
+            int idxAddNo = std::get<1>(candidatosGerados[ci]);
+            Node noAddTrip = data->getVertex(std::get<2>(candidatosGerados[ci]));
+
+            vector<Node> nodesTripTemp = solution[idxAddTrip]->getNodes();
+            float antigaDistancia = calcTripLength(data, solution[idxAddTrip]->getStartHotel(), solution[idxAddTrip]->getEndHotel(), nodesTripTemp);
+
+            nodesTripTemp.insert(nodesTripTemp.begin() + idxAddNo, noAddTrip);
+            float novaDistancia = calcTripLength(data, solution[idxAddTrip]->getStartHotel(), solution[idxAddTrip]->getEndHotel(), nodesTripTemp);
+
+            if (novaDistancia <= solution[idxAddTrip]->getTd())
+            {
+                solution[idxAddTrip]->setNodes(nodesTripTemp);
+                solution[idxAddTrip]->setCurrentLength(novaDistancia);
+            }
+        }
+        return solution;
+    }
+    else
+    {
+        return nullptr;
+    }
+}
+
 // tenta inserir 2 caras da trip e adicionar outros com insert
 Trip **extract2Insert(OPHS *data, Trip **solution, mt19937 *gen)
 {
@@ -330,8 +449,7 @@ Trip **extract2Insert(OPHS *data, Trip **solution, mt19937 *gen)
                     // cout << "Trip: " << indexTrip << " ANTES INSERT EXTRACT2..." << lengthTrip << endl;
                    
 
-                    while (insert(data, solCopia, gen, nosExcluidos) != nullptr)
-                        ;
+                    while (insert(data, solCopia, gen, nosExcluidos) != nullptr);
 
                     // cout << "Trip: " << indexTrip << " DEPOIS INSERT EXTRACT2..." << calcTripLength(data, solCopia[indexTrip]->getStartHotel(), solCopia[indexTrip]->getEndHotel(), solCopia[indexTrip]->getNodes()) << endl;
             

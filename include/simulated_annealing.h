@@ -32,23 +32,6 @@ void printCandidatos(vector<tuple<int, int, int, float, float>> candidatosGerado
         cout << "Ninguem na lista..." << endl;
 }
 
-// <indexTrip, indexNo, idxVertexAdd, incrementoDistancia, ratio = score/incrementoDistancia>
-void printCandidatosInsert(vector<tuple<int, int, int, float, float>> candidatosGerados)
-{
-    for (const auto &tupla : candidatosGerados)
-    {
-        int indexTrip, indexNo, idVertexAdd;
-        float incrementoDistancia, ratio;
-        tie(indexTrip, indexNo, idVertexAdd, incrementoDistancia, ratio) = tupla;
-
-        cout << "Trip " << indexTrip;
-        cout << " indexNo " << indexNo;
-        cout << " idVertexAdd " << idVertexAdd;
-        cout << " incrementoDistancia: " << incrementoDistancia;
-        cout << " ratio " << ratio << endl;
-    }
-}
-
 float updateTemperature(float T)
 {
     return 0.8 * T;
@@ -110,6 +93,7 @@ Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, fl
     set<int> vazio;
 
     int iteracoesT = 0;
+    int solIgual = 0; // toda vez que encontrar uma solução melhor zero essa variavel e incremento toda vez que gerar solução igual
     while (T > Tmin)
     {
         int iter = 0;
@@ -118,15 +102,22 @@ Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, fl
             Trip **copySolution = makeCopySolution(data, initialSolution);
             Trip **neighborSolution;
 
-            // neighborSolution = insert(data, neighborSolution, gen, vazio);
-            // neighborSolution = generateRandomNeighbor2(data, neighborSolution, gen);
-           
             neighborSolution = extract2Insert(data, copySolution, gen);
             neighborSolution = applyRandomMovement(data, neighborSolution, gen);
 
            
             float neighborSolutionScore = getScoreTour(data, neighborSolution);
             float initialSolutionScore = getScoreTour(data, initialSolution);
+
+            if (equalSolution(data, copySolution, neighborSolution))
+            {
+                solIgual++;
+                // cout <<"------------------------------------------------------------"<<endl;
+                // printIdsTrips(data, copySolution);
+                // cout << "solução igual..." << endl;
+                // printIdsTrips(data, neighborSolution);
+                // cout << "------------------------------------------------------------" << endl;
+            }
 
             // if (neighborSolutionScore == initialSolutionScore)
             // {
@@ -150,8 +141,10 @@ Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, fl
                 float bestTotalScore = getScoreTour(data, bestSolution);
                 if (neighborSolutionScore > bestTotalScore)
                 {
+                    solIgual = 0;
                     bestSolution = neighborSolution;
-                    cout << "Achou sol melhor..."<< "Qualidade: " << neighborSolutionScore << endl;
+                    cout << "Achou sol melhor..."
+                         << "Qualidade: " << neighborSolutionScore << endl;
                     // printTrips(data, bestSolution);
                 }
             }
@@ -177,6 +170,13 @@ Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, fl
         T = updateTemperature(T);
         // if (iteracoesT % 150 == 0)
         cout << "IteracaoTemperatura: " << iteracoesT << " Temperatura: " << T << " Qualida da best: " << getScoreTour(data, bestSolution) << endl;
+        
+        // cout << "solIgual: " << solIgual << " iterations: " << iterations << endl;
+        if (solIgual > iterations)
+        {
+            cout << "Gerou " << solIgual << " vezes a mesma solução  sem apresentar melhora" << endl;
+            return bestSolution;
+        }
     }
     return bestSolution;
 }

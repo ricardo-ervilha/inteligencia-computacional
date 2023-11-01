@@ -15,7 +15,7 @@ int main()
 
     //Parte de leitura da instância
     string instance_folder = "../instances/OPHS_instances_February 2013/";
-    string instance_name = "SET1 3-4/100-40-3-4";
+    string instance_name = "SET2 6-4/100-35-6-4";
     string outputfile = "../out/" + instance_name + ".ophsout";
 
     OPHS *data = read_input(instance_folder + instance_name + ".ophs");
@@ -37,6 +37,7 @@ int main()
     float temperaturaFinal = 0.01;
     Trip **solucaoInicial = data->getTrips();
 
+    writeTrips(data, solucaoInicial, outputfile);
     Trip **novaSolucao = simulatedAnnealing(data, solucaoInicial, iteracoes, temperaturaInicial, temperaturaFinal, &gen);
 
     data->printDadosOPHS();
@@ -46,5 +47,6 @@ int main()
 
     cout << "Melhora de : " << ((scoreFinal / scoreInicial) - 1) * 100 << " %" << endl;
 
+    writeTrips(data, solucaoInicial, outputfile);
     return 0;
 }
