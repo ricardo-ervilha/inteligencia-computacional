@@ -51,7 +51,7 @@ void printCandidatosInsert(vector<tuple<int, int, int, float, float>> candidatos
 
 float updateTemperature(float T)
 {
-    return 0.99 * T;
+    return 0.8 * T;
 }
 
 Trip **applyRandomMovement(OPHS *data, Trip **neighborSolution, mt19937 *gen)
@@ -151,9 +151,8 @@ Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, fl
                 if (neighborSolutionScore > bestTotalScore)
                 {
                     bestSolution = neighborSolution;
-                    cout << "Achou sol melhor..."
-                         << "Qualidade: " << neighborSolutionScore << endl;
-                    printTrips(data, bestSolution);
+                    cout << "Achou sol melhor..."<< "Qualidade: " << neighborSolutionScore << endl;
+                    // printTrips(data, bestSolution);
                 }
             }
             else

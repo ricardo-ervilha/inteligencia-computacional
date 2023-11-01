@@ -75,7 +75,7 @@ for i in range(0, len(x)):
         elif i == 1:
             plt.scatter(x[i], y[i], s = 100, c = "white") # hotel final
         else:
-            plt.scatter(x[i], y[i], s = 100, c = "red") # outros hotéis
+            plt.scatter(x[i], y[i], s = 100, c = "yellow") # outros hotéis
     else:
         col = score[i]/maxScore
         plt.scatter(x[i], y[i], s = 25 + 25 * col, c = ([0.5*(1 + col), col, col]))

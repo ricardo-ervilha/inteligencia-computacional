@@ -7,6 +7,8 @@ add_executable(main apps/main.cpp)
 # Configurações de compilação (opcional)
 set(CMAKE_CXX_STANDARD 17)
 
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+
 # Adicione os arquivos .cpp da biblioteca MinhaBiblioteca ao executável
 target_sources(main PRIVATE
     include/Node.h
