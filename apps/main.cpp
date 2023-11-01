@@ -15,7 +15,7 @@ int main()
 
     // Parte de leitura da instância
     string instance_folder = "../instances/OPHS_instances_February 2013/";
-    string instance_name = "SET5 10-5/66-130-10-5";
+    string instance_name = "SET1 3-4/100-40-3-4";
     string outputfile = "../out/" + instance_name + ".ophsout";
 
     OPHS *data = read_input(instance_folder + instance_name + ".ophs");
@@ -52,5 +52,10 @@ int main()
     cout << "Melhora de : " << ((scoreFinal / scoreInicial) - 1) * 100 << " %" << endl;
 
     writeTrips(data, solucaoInicial, outputfile);
+
+    string filename = "saida.txt";
+    std::ofstream outputFile(filename, std::ofstream::app);
+    outputFile << instance_name<<"\t"<<scoreFinal<<"\t"<<duration.count()<<endl;
+    outputFile.close();
     return 0;
 }
