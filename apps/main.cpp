@@ -8,39 +8,43 @@ using namespace std;
 
 int main()
 {
-    //Parte de inicialização de sementes
+    // Parte de inicialização de sementes
     unsigned int seed = chrono::system_clock::now().time_since_epoch().count();
     mt19937 gen(seed); // gerador de números aleatórios com a semente
     cout << "SEED: " << seed << endl;
 
-    //Parte de leitura da instância
+    // Parte de leitura da instância
     string instance_folder = "../instances/OPHS_instances_February 2013/";
-    string instance_name = "SET2 6-4/100-35-6-4";
+    string instance_name = "SET5 10-5/66-130-10-5";
     string outputfile = "../out/" + instance_name + ".ophsout";
 
     OPHS *data = read_input(instance_folder + instance_name + ".ophs");
 
     data->printDadosOPHS();
 
-    //Parte do Algoritmo Construtivo
+    // Parte do Algoritmo Construtivo
+    auto start = std::chrono::high_resolution_clock::now();
     greedy_randomized_adaptive_reactive_procedure(data, &gen);
 
     data->printDadosOPHS();
-    
+
     float scoreInicial = getScoreTour(data, data->getTrips());
     cout << "+ Score Final do passeio: " << scoreInicial << endl;
 
-    
     // Parte do Simulated Annealing
     int iteracoes = 100;
     float temperaturaInicial = 100;
     float temperaturaFinal = 0.01;
     Trip **solucaoInicial = data->getTrips();
 
-    writeTrips(data, solucaoInicial, outputfile);
     Trip **novaSolucao = simulatedAnnealing(data, solucaoInicial, iteracoes, temperaturaInicial, temperaturaFinal, &gen);
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Tempo decorrido: " << duration.count() << " ms" << std::endl;
 
-    data->printDadosOPHS();
+    writeTrips(data, solucaoInicial, outputfile);
+
+    // data->printDadosOPHS();
 
     float scoreFinal = getScoreTour(data, novaSolucao);
     cout << "+ Score Final do passeio: " << scoreFinal << endl;

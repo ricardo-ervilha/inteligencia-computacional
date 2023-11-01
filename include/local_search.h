@@ -420,8 +420,12 @@ Trip **extract2Insert(OPHS *data, Trip **solution, mt19937 *gen)
                 nosExcluidos.insert(nodesTrip[i].id);
                 nosExcluidos.insert(nodesTrip[i + 1].id);
 
-                nodesTrip.erase(nodesTrip.begin() + i);
-                nodesTrip.erase(nodesTrip.begin() + i);
+                if (i + 1 < nodesTrip.size())
+                { // Verifique se há dois elementos consecutivos para remover
+                    nodesTrip.erase(nodesTrip.begin() + i, nodesTrip.begin() + i + 2);
+                }
+                // nodesTrip.erase(nodesTrip.begin() + i);
+                // nodesTrip.erase(nodesTrip.begin() + i);
 
                 // cout << "Trip: " << indexTrip << " i: " << i << " Tamanho: " << nodesTrip.size() << endl;
                 // printNodes(nodesTrip);
@@ -447,12 +451,11 @@ Trip **extract2Insert(OPHS *data, Trip **solution, mt19937 *gen)
 
                     // nos removidos e solucao atualizada, agr mando pro insert para tentar melhorar
                     // cout << "Trip: " << indexTrip << " ANTES INSERT EXTRACT2..." << lengthTrip << endl;
-                   
 
-                    while (insert(data, solCopia, gen, nosExcluidos) != nullptr);
+                    while (insert(data, solCopia, gen, nosExcluidos) != nullptr)
+                        ;
 
                     // cout << "Trip: " << indexTrip << " DEPOIS INSERT EXTRACT2..." << calcTripLength(data, solCopia[indexTrip]->getStartHotel(), solCopia[indexTrip]->getEndHotel(), solCopia[indexTrip]->getNodes()) << endl;
-            
 
                     scoreNovo = getScoreTour(data, solCopia);
 
@@ -462,7 +465,7 @@ Trip **extract2Insert(OPHS *data, Trip **solution, mt19937 *gen)
                         solution = solCopia;
                         i = 0;
                     }
-                   
+
                     // cout << "DEPOIS ATUALIZAR SOL: " << endl;
                     // solCopia[indexTrip]->dadosTrip();
                     // solCopia[indexTrip]->dadosNodes();
