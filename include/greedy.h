@@ -358,6 +358,7 @@ void avalia_hoteis(OPHS *data){
 Trip** constructive_algorithm(OPHS *data, mt19937 *gen, float alfa) {
 
     set<int> visiteds; //Lista de visitados global
+    
     for(int i = 0; i < data->getNumTrips();i++){
         
         //Passo as trips inicializadas com hoteis, passo visiteds, passo idTrip como i e o último hotel inserido nesse inicio vai ser o hotel de inicio.
@@ -372,7 +373,7 @@ Trip** constructive_algorithm(OPHS *data, mt19937 *gen, float alfa) {
             trip->updateCurrentLength(std::get<3>(candidatos[index]));
             trip->add(good_node, std::get<1>(candidatos[index]));
             visiteds.insert(std::get<0>(candidatos[index]));
-            avalia_hoteis(data);
+            
             candidatos = generate_candidate_list_ap(data, visiteds, i);
             
         }
@@ -382,13 +383,6 @@ Trip** constructive_algorithm(OPHS *data, mt19937 *gen, float alfa) {
             trip->updateCurrentLength(data->getDistance(trip->getNodes().back().id, trip->getEndHotel()));
         
     }
-    int totalScore = 0;
-    // for(int i = 0; i < data->getNumTrips(); i++){
-    //     data->getTrip(i)->dadosTrip();
-    //     data->getTrip(i)->dadosNodes();
-    //     totalScore +=  data->getTrip(i)->getScoreTrip();
-    // }
-    // cout << totalScore << endl;
 
     return data->getTrips();
 }

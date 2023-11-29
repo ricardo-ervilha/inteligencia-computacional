@@ -1,6 +1,7 @@
 #include <iostream>
 #include "../include/file_io.h"
-#include "../include/greedy.h"
+#include "../include/genetic.h"
+#include "../include/greedy_v2.h"
 #include "util.h"
 #include "simulated_annealing.h"
 
@@ -15,47 +16,54 @@ int main()
 
     // Parte de leitura da instância
     string instance_folder = "../instances/OPHS_instances_February 2013/";
-    string instance_name = "SET1 3-4/100-40-3-4";
+    string instance_name = "SET1 1-2/64-45-1-2";
     string outputfile = "../out/" + instance_name + ".ophsout";
 
     OPHS *data = read_input(instance_folder + instance_name + ".ophs");
 
+    //*****************************************************************************
+    
+    //Algoritmo construtivo
     data->printDadosOPHS();
 
-    // Parte do Algoritmo Construtivo
-    auto start = std::chrono::high_resolution_clock::now();
     greedy_randomized_adaptive_reactive_procedure(data, &gen);
 
     data->printDadosOPHS();
 
     float scoreInicial = getScoreTour(data, data->getTrips());
     cout << "+ Score Final do passeio: " << scoreInicial << endl;
+    
+    //*****************************************************************************
+
+    //Parte do Algoritmo Genético
+    // genetic_algorithm(data, 4, 0.25, 0.25, &gen);
 
     // Parte do Simulated Annealing
-    int iteracoes = 100;
-    float temperaturaInicial = 100;
-    float temperaturaFinal = 0.01;
-    Trip **solucaoInicial = data->getTrips();
+    // int iteracoes = 100;
+    // float temperaturaInicial = 100;
+    // float temperaturaFinal = 0.01;
+    // Trip **solucaoInicial = data->getTrips();
 
-    Trip **novaSolucao = simulatedAnnealing(data, solucaoInicial, iteracoes, temperaturaInicial, temperaturaFinal, &gen);
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    std::cout << "Tempo decorrido: " << duration.count() << " ms" << std::endl;
+    // Trip **novaSolucao = simulatedAnnealing(data, solucaoInicial, iteracoes, temperaturaInicial, temperaturaFinal, &gen);
+    // auto end = std::chrono::high_resolution_clock::now();
+    // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    // std::cout << "Tempo decorrido: " << duration.count() << " ms" << std::endl;
 
-    writeTrips(data, solucaoInicial, outputfile);
+    // writeTrips(data, solucaoInicial, outputfile);
 
-    // data->printDadosOPHS();
+    // // data->printDadosOPHS();
 
-    float scoreFinal = getScoreTour(data, novaSolucao);
-    cout << "+ Score Final do passeio: " << scoreFinal << endl;
+    // float scoreFinal = getScoreTour(data, novaSolucao);
+    // cout << "+ Score Final do passeio: " << scoreFinal << endl;
 
-    cout << "Melhora de : " << ((scoreFinal / scoreInicial) - 1) * 100 << " %" << endl;
+    // cout << "Melhora de : " << ((scoreFinal / scoreInicial) - 1) * 100 << " %" << endl;
 
-    writeTrips(data, solucaoInicial, outputfile);
+    // writeTrips(data, solucaoInicial, outputfile);
 
-    string filename = "saida.txt";
-    std::ofstream outputFile(filename, std::ofstream::app);
-    outputFile << instance_name<<"\t"<<scoreFinal<<"\t"<<duration.count()<<endl;
-    outputFile.close();
+    // string filename = "saida.txt";
+    // std::ofstream outputFile(filename, std::ofstream::app);
+    // outputFile << instance_name<<"\t"<<scoreFinal<<"\t"<<duration.count()<<endl;
+    // outputFile.close();
+
     return 0;
 }
