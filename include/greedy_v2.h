@@ -28,7 +28,7 @@ void print_matrix(OPHS *data, bool*** matrix){
 
 vector<vector<int>> recursive_fillable_possibilities(OPHS *data, bool*** matrix, vector<vector<int>> combinations, int nivel) {
     if (nivel == 0) {
-        cout << "Nivel: " << nivel << endl;
+        // cout << "Nivel: " << nivel << endl;
 
         for (int j = 0; j < data->getNumExtraHotels() + 2; j++) {
             if (matrix[0][j][0]) {
@@ -42,7 +42,7 @@ vector<vector<int>> recursive_fillable_possibilities(OPHS *data, bool*** matrix,
         return recursive_fillable_possibilities(data, matrix, combinations, nivel + 1);
 
     } else if (nivel == data->getNumTrips() - 1) {
-        cout << "Nivel: " << nivel << endl;
+        // cout << "Nivel: " << nivel << endl;
 
         for (int i = 0; i < combinations.size(); i++) {
             if (matrix[combinations[i].back()][1][nivel]) {
@@ -52,7 +52,7 @@ vector<vector<int>> recursive_fillable_possibilities(OPHS *data, bool*** matrix,
 
         return combinations;
     } else {
-        cout << "Nivel 1\n";
+        // cout << "Nivel 1\n";
         vector<vector<int>> combinations2;
         for (int i = 0; i < combinations.size(); i++) {
             for (int j = 0; j < data->getNumExtraHotels() + 2; j++) {
@@ -93,13 +93,13 @@ vector<vector<int>> mount_feasible_possibilities(OPHS *data, bool*** matrix) {
     *pointer = aux;
 
     // Print das combinações
-    for (int i = 0; i < pointer->size(); i++) {
-        vector<int> aux = (*pointer)[i];
-        for (int j = 0; j < aux.size(); j++) {
-            cout << aux[j] << " ";
-        }
-        cout << endl;
-    }
+    // for (int i = 0; i < pointer->size(); i++) {
+    //     vector<int> aux = (*pointer)[i];
+    //     for (int j = 0; j < aux.size(); j++) {
+    //         cout << aux[j] << " ";
+    //     }
+    //     cout << endl;
+    // }
 
     return *pointer;
 }
@@ -131,6 +131,8 @@ void find_hotels_combination(OPHS* data, mt19937 *gen){
 
     print_matrix(data, matrix);
 
+    data->setMatrix(matrix);
+
     vector<vector<int>> hotels = mount_feasible_possibilities(data, matrix);
     
     int randomPossibilityIndex = intRandom(0, hotels.size() - 1, gen);
@@ -144,14 +146,15 @@ void find_hotels_combination(OPHS* data, mt19937 *gen){
         cont++;
     }
 
-    for (int i = 0; i < data->getNumExtraHotels() + 2; i++) {
-        for (int j = 0; j < data->getNumExtraHotels() + 2; j++) {
-            delete[] matrix[i][j];
-        }
-        delete[] matrix[i];
-    }
+    //Deleção da matriz (Deixar comentado pois usa no genético)
+    // for (int i = 0; i < data->getNumExtraHotels() + 2; i++) {
+    //     for (int j = 0; j < data->getNumExtraHotels() + 2; j++) {
+    //         delete[] matrix[i][j];
+    //     }
+    //     delete[] matrix[i];
+    // }
 
-    delete[] matrix;
+    // delete[] matrix;
 }
 
 /* Abordagem Construtiva */
@@ -316,10 +319,7 @@ void atualizaProbabilidades(float *q, float *probabilidades, int tamAlfa){
 
 void greedy_randomized_adaptive_reactive_procedure(OPHS *data, mt19937 *gen)
 {   
-    time_t val = time(NULL);
-    srand(val);
-    cout << "Seed do Randomizado Reativo: " << val << endl;
-
+    
     find_hotels_combination(data, gen); //preenche o tour com os hoteis iniciais.
 
     Trip **copia = makeCopySolution(data, data->getTrips());
@@ -382,7 +382,6 @@ void greedy_randomized_adaptive_reactive_procedure(OPHS *data, mt19937 *gen)
     }
     
     data->setTrips(melhor);
-    cout << "Seed do Randomizado Reativo: " << val << endl;
 }
 
 

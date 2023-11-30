@@ -15,7 +15,9 @@ private:
     Trip **trips; //Guarda as trips do tour
     Node *vertex; //Guarda os hoteis e nós
     float **d_matrix; //Matriz com distâncias
-    
+
+    bool ***matrix; //Matriz de viabilidade dos hoteis.
+
 public:
     OPHS(int numVertices, int numExtraHotels, int numTrips, float totalTourLength, Node* vertex, float **d_matrix, Trip **trips){
         this->numVertices = numVertices;
@@ -45,6 +47,14 @@ public:
     void setTrips(Trip **trips) {this->trips = trips;};
     Trip* getTrip(int i)  {return this->trips[i];};
     float** getd_matrix()     {return this->d_matrix;};
+
+    void setMatrix(bool ***matrix){
+        this->matrix = matrix;
+    }
+
+    bool*** getMatrix(){
+        return this->matrix;
+    }
     
     void printDadosOPHS(){
         std::cout << "-=-=-=-=-=-=-=-=-=-=-=-= Dados Gerais -=-=-=-=-=-=-=-=-=-=-=-=\n";

@@ -14,6 +14,9 @@ int main()
     mt19937 gen(seed); // gerador de números aleatórios com a semente
     cout << "SEED: " << seed << endl;
 
+    time_t val = time(NULL);
+    srand(val);
+
     // Parte de leitura da instância
     string instance_folder = "../instances/OPHS_instances_February 2013/";
     string instance_name = "SET1 1-2/64-45-1-2";
@@ -24,19 +27,21 @@ int main()
     //*****************************************************************************
     
     //Algoritmo construtivo
-    data->printDadosOPHS();
+    // data->printDadosOPHS();
 
-    greedy_randomized_adaptive_reactive_procedure(data, &gen);
+    // greedy_randomized_adaptive_reactive_procedure(data, &gen);
 
-    data->printDadosOPHS();
+    // data->printDadosOPHS();
 
-    float scoreInicial = getScoreTour(data, data->getTrips());
-    cout << "+ Score Final do passeio: " << scoreInicial << endl;
+    // float scoreInicial = getScoreTour(data, data->getTrips());
+    // cout << "+ Score Final do passeio: " << scoreInicial << endl;
     
     //*****************************************************************************
 
     //Parte do Algoritmo Genético
-    // genetic_algorithm(data, 4, 0.25, 0.25, &gen);
+    genetic_algorithm(data, 2, 0.25, 0.25, &gen);
+
+    //*****************************************************************************
 
     // Parte do Simulated Annealing
     // int iteracoes = 100;
