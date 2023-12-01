@@ -10,6 +10,7 @@
 #include <time.h>   /* time */
 #include "util.h"
 #include "greedy_v2.h"
+#include "local_search.h"
 
 
 //Consertar o funcionamento do método da roleta
@@ -49,6 +50,8 @@ bool comparatorNodes(Node a, Node b)
     return a.score < b.score;
 }
 
+// bool verifiesFeasibility(int tripPivot, vector<Trip**> populacao, int indexParent1, int indexParent2, OPHS* data){}
+
 void applyCrossOverI(OPHS* data, int indexParent1, int indexParent2, vector<Trip**> populacao, vector<vector<int>> cromossomos, mt19937 *gen){
 
     // [a b c d] -> supondo essa combinação de hoteis
@@ -61,8 +64,11 @@ void applyCrossOverI(OPHS* data, int indexParent1, int indexParent2, vector<Trip
     cout << "Index do pai 2: " << indexParent2 << endl;
 
     //The algorithm then checks if it is feasible for this pivot trip to start from the initial hotel of the selected trip in the first parent solution and end in the final hotel of the selected trip in the second parent solution. This check, can be done efficiently by using the matrix of pairs of hotels.If the condition is false, another trip is selected randomly.
-
+    
+    //data->getMatrix()[tripPivot][populacao[indexParent1][tripPivot]->getStartHotel()][populacao[indexParent2][tripPivot]->getEndHotel()] == false
+    
     while(data->getMatrix()[tripPivot][populacao[indexParent1][tripPivot]->getStartHotel()][populacao[indexParent2][tripPivot]->getEndHotel()] == false){
+
         tripPivot = intRandom(0, data->getNumTrips()-2, gen);
     }
 
@@ -104,7 +110,6 @@ void applyCrossOverI(OPHS* data, int indexParent1, int indexParent2, vector<Trip
     cout << "]  ";
     cout << "Cromossomo Filho\n";
 
-    //Primeiro tratando a trip pivot
 
     //Inicializa os hoteis
     int cont = 0;
@@ -114,25 +119,45 @@ void applyCrossOverI(OPHS* data, int indexParent1, int indexParent2, vector<Trip
         cont++;
     }
 
+    set<int> vazio;
+
+    //Enchendo as trips antes da trip pivo pois podem permanecer iguais
+    for(int j = 0; j < tripPivot; j++){
+        for(int i = 0; i < populacao[indexParent1][j]->getNodes().size(); i++){
+            data->getTrip(j)->add(populacao[indexParent1][j]->getNode(i));
+        }
+        data->getTrip(j)->setCurrentLength(calcTripLength(data, data->getTrip(j)));
+    }
+
     //Enchendo a trip pivo com os POI's derivados do primeiro pai
     for(int i = 0; i < populacao[indexParent1][tripPivot]->getNodes().size(); i++){
         data->getTrip(tripPivot)->add(populacao[indexParent1][tripPivot]->getNode(i));
     }
 
     data->getTrip(tripPivot)->setCurrentLength(calcTripLength(data, data->getTrip(tripPivot)));
+
     data->printDadosOPHS();
 
-    vector<Node> nos = data->getTrip(tripPivot)->getNodes();
+    vector<Node> *nos = data->getTrip(tripPivot)->getNodesPointer();
+
     while(data->getTrip(tripPivot)->getCurrentLength() > data->getTrip(tripPivot)->getTd()){
         //Pego o nó de menor score
-        int minElementIndex = std::min_element(nos.begin(),nos.end(), comparatorNodes) - nos.begin();
+        int index = intRandom(0, nos->size() - 1, gen);
 
-        cout << "Index: " << minElementIndex << endl;
+        cout << "Index: " << index << endl;
 
-        nos.erase(nos.begin() + minElementIndex);
+        nos->erase(nos->begin() + index);
 
         //Atualizo o trip length
         data->getTrip(tripPivot)->setCurrentLength(calcTripLength(data, data->getTrip(tripPivot)));
+    }
+
+    //Completa a parte final da trip.  
+    Trip** sol = insert(data, data->getTrips(), gen, vazio);
+
+    if (sol != nullptr){
+        cout << "Conseguiu fazer algo dentro do insert\n";
+        data->setTrips(sol);
     }
 
     data->printDadosOPHS();

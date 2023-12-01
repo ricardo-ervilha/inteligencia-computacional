@@ -32,6 +32,7 @@ public:
     uint getId() { return this->id; };
     void setNodes(std::vector<Node> newNodes){ this->nodes = newNodes;}
     std::vector<Node> getNodes() { return this->nodes; };
+    std::vector<Node>* getNodesPointer() {return &this->nodes; };
     Node getNode(int i) { return this->nodes[i]; };
     void add(Node no) { nodes.push_back(no); };
     void add(Node no, int pos) { nodes.insert(nodes.begin() + pos, no); };
