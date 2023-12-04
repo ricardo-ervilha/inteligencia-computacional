@@ -278,6 +278,36 @@ Trip** constructive_algorithm(OPHS *data, mt19937 *gen, float alfa) {
     return data->getTrips();
 }
 
+Trip** constructive_algorithm_modified(OPHS *data, mt19937 *gen, set<int> visiteds, int idTrip, float alfa) {
+
+    for(int i = idTrip; i < data->getNumTrips();i++){
+        
+        //Passo as trips inicializadas com hoteis, passo visiteds, passo idTrip como i e o último hotel inserido nesse inicio vai ser o hotel de inicio.
+        Trip *trip = data->getTrip(i);
+        
+        vector<tuple<int, int, float, float>> candidatos = generate_candidate_list_ap(data, visiteds, i);
+        
+        while(!candidatos.empty()){
+            int index = randomRange(std::distance(candidatos.begin(), candidatos.end()), alfa, gen);
+            
+            Node good_node = data->getVertex(std::get<0>(candidatos[index]));
+            trip->updateCurrentLength(std::get<3>(candidatos[index]));
+            trip->add(good_node, std::get<1>(candidatos[index]));
+            visiteds.insert(std::get<0>(candidatos[index]));
+            
+            candidatos = generate_candidate_list_ap(data, visiteds, i);
+            
+        }
+        
+        //Se a trip não está vazia (sem nós!!!!)      
+        if(trip->getNodes().size() != 0)
+            trip->updateCurrentLength(data->getDistance(trip->getNodes().back().id, trip->getEndHotel()));
+        
+    }
+
+    return data->getTrips();
+}
+
 
 int sorteia_alfa(float *probAlfas, int tamAlfas){
     //Usando probabilidade acumulada.

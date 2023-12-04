@@ -19,7 +19,7 @@ int main()
 
     // Parte de leitura da instância
     string instance_folder = "../instances/OPHS_instances_February 2013/";
-    string instance_name = "SET1 1-2/64-45-1-2";
+    string instance_name = "SET1 3-4/64-70-3-4";
     string outputfile = "../out/" + instance_name + ".ophsout";
 
     OPHS *data = read_input(instance_folder + instance_name + ".ophs");
@@ -39,7 +39,7 @@ int main()
     //*****************************************************************************
 
     //Parte do Algoritmo Genético
-    genetic_algorithm(data, 2, 0.25, 0.25, &gen);
+    genetic_algorithm(data, 8, 0.5, 0.5, 0.25, &gen);
 
     //*****************************************************************************
 
