@@ -13,7 +13,6 @@
 #include "local_search.h"
 
 
-//Consertar o funcionamento do método da roleta
 int rouletteWheel(vector<int> fitnessSolutions, int tamPop, int totalScore, mt19937 *gen){
     double random_number = rand() / (float)RAND_MAX;
     
@@ -48,7 +47,126 @@ bool comparatorNodes(Node a, Node b)
     return a.score < b.score;
 }
 
-// bool verifiesFeasibility(int tripPivot, vector<Trip**> populacao, int indexParent1, int indexParent2, OPHS* data){}
+void applyMutation(OPHS* data, int indexParent, vector<Trip**> populacao, vector<vector<int>> cromossomos, mt19937 *gen){
+
+    int idTrip = intRandom(0, data->getNumTrips()-2, gen);
+
+    cout << "Index do parent: " << indexParent << endl;
+    cout << "=> Indice da trip pivot: " << idTrip << endl;
+
+    vector<int> new_chromossome;
+
+    //Primeira parte vindo do Parent
+    new_chromossome.push_back(0);
+    
+    for(int i = 0; i < idTrip; i++){    
+        new_chromossome.push_back(populacao[indexParent][i]->getEndHotel());
+    }
+
+    cout << "[ ";
+    for(int j = 0; j < cromossomos[indexParent].size(); j++){
+        cout << cromossomos[indexParent][j] << " ";
+    }
+    cout << "]  ";
+    cout << "Cromossomo Pai\n";
+
+    vector<int> combination;  
+    vector<int> hoteisPossiveis;
+    //descobre os hoteis possiveis para fim da trip escolhida
+    for(int i = 0; i < data->getNumExtraHotels() + 2; i++){
+        if(data->getMatrix()[idTrip][populacao[indexParent][idTrip]->getStartHotel()][i]){
+            hoteisPossiveis.push_back(i);
+        }
+    }
+
+    cout << "HOTEIS CANDIDATOS\n"; 
+    for(int j = 0; j < hoteisPossiveis.size(); j++){
+        cout << hoteisPossiveis[j] << " ";
+    }
+    cout << endl;
+
+    int hotelEscolhido = hoteisPossiveis[intRandom(0, hoteisPossiveis.size(), gen)]; 
+    combination.push_back(hotelEscolhido);
+
+    cout << "Hotel escolhido: " << hotelEscolhido << endl;
+
+    for(int i = idTrip + 1; i < data->getNumTrips(); i++){
+        cout << "combination.back: " << combination.back() << endl;
+        cout << "cromossomos[indexParent][i+1]: " << cromossomos[indexParent][i+1] << endl;
+        if(!data->getMatrix()[idTrip][combination.back()][cromossomos[indexParent][i+1]]){
+            cout << "Caiu no sorteio\n";
+            // Se a trip seguinte não for feasible
+            vector<int> hoteisPossiveis;
+
+            // descobre os hoteis possiveis para fim da trip
+            for (int j = 0; j < data->getNumExtraHotels() + 2; j++)
+            {
+                if (data->getMatrix()[idTrip][combination.back()][j])
+                {
+                    hoteisPossiveis.push_back(i);
+                }
+            }
+
+            //Altera o final
+            int hotelEscolhido = hoteisPossiveis[intRandom(0, hoteisPossiveis.size(), gen)]; 
+            combination.push_back(hotelEscolhido);
+        }else{
+            cout << "Caiu aqui\n";
+            //Se deu bom trocar o hotel e isso o hotel final da trip seguinte, só preencho com o restante que faltar.
+            for(int j = i+1; j <= data->getNumTrips(); j++){
+                combination.push_back(cromossomos[indexParent][j]);
+            }
+            break;
+        }
+    }
+
+    cout << "Combination: ";
+    for(int i = 0; i < combination.size(); i++){
+        cout << combination[i] << " ";
+    }
+    cout << endl;
+
+    for(int i = 0; i < combination.size(); i++){
+        new_chromossome.push_back(combination[i]);
+    }
+
+    cout << "Impressão do cromossomo pós mutação\n";
+    for(int i = 0; i < new_chromossome.size(); i++){
+        cout << new_chromossome[i] << " " ;
+    }
+    cout << endl;
+
+
+    //Inicializa os hoteis
+    int cont = 0;
+    while(cont < data->getNumTrips()){
+        data->getTrip(cont)->setStartHotel(new_chromossome[cont]);
+        data->getTrip(cont)->setEndHotel(new_chromossome[cont+1]);
+        cont++;
+    }
+
+    /* Caso queira reaproveitar os nos do pai antes da trip pivo */
+    // set<int> visiteds;
+
+    // //Enchendo as trips antes da trip pivo pois podem permanecer iguais
+    // for(int j = 0; j < idTrip; j++){
+    //     for(int i = 0; i < populacao[indexParent][j]->getNodes().size(); i++){
+    //         data->getTrip(j)->add(populacao[indexParent][j]->getNode(i));
+    //         visiteds.insert(populacao[indexParent][j]->getNode(i).id); //adiciona os nos visitados das trips antes da pivô
+    //     }
+    //     data->getTrip(j)->setCurrentLength(calcTripLength(data, data->getTrip(j)));
+    // }
+
+    // data->printDadosOPHS();
+
+    //Construtivo do zero
+    Trip** sol = constructive_algorithm(data, gen, 0);  
+
+    //Completa a parte final do tour usando o codigo comentado acima.  
+    // Trip** sol = constructive_algorithm_modified(data, gen, visiteds, idTrip+1, 0);
+
+    // data->printDadosOPHS();
+}
 
 void applyCrossOverI(OPHS* data, int indexParent1, int indexParent2, vector<Trip**> populacao, vector<vector<int>> cromossomos, mt19937 *gen){
 
@@ -201,12 +319,12 @@ void genetic_algorithm(OPHS* data, int tamPop, float percentualCrossOver, float 
         cout << "Score da Solução " << i << ": " << fitnessSolutions[i] << endl;
     }
     cout << "-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\n";
-    // int maxNumberOfGenerations = 10;
+    // int maxNumberOfGenerations = 10; 
 
-    /* Aplicação do CrossOver I*/
-    for (int k = 0; k < 8; k++)
+    for (int k = 0; k < 5; k++)
     {
 
+        /* Aplicação do CrossOver I*/
         for (int i = 1; i <= (int) 2 * percentualCrossOver * tamPop; i++)
         {
             int indexParent1 = intRandom(0, tamPop - 1, gen);
@@ -235,7 +353,7 @@ void genetic_algorithm(OPHS* data, int tamPop, float percentualCrossOver, float 
             copia = makeCopySolution(data, data->getTrips());
         }
 
-        cout << "-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\n";
+        cout << "-+-+-+-+-+-+-+-+-Depois do CrossOver+-+-+-+-+-+-+-+-+-+-+\n";
         // Imprime o score depois dos novos crossovers
         for (int i = 0; i < populacao.size(); i++)
         {
@@ -248,6 +366,42 @@ void genetic_algorithm(OPHS* data, int tamPop, float percentualCrossOver, float 
             cout << "Score da Solução " << i << ": " << fitnessSolutions[i] << endl;
         }
         cout << "-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\n";
+
+
+        /* Aplicacao da Mutação */
+        for (int i = 1; i <= (int) 2 * percentualMutacao * tamPop; i++)
+        {
+            
+            int indexParent = intRandom(0, tamPop - 1, gen);
+            applyMutation(data, indexParent, populacao, cromossomos, gen);
+
+            populacao.push_back(makeCopySolution(data, data->getTrips())); // Salvo solução na população
+
+            int score = getScoreTour(data, data->getTrips()); // Calculo o score do tour
+            totalScore += score;
+            fitnessSolutions.push_back(getScoreTour(data, data->getTrips())); // Salvo score na lista de fitness
+
+            vector<int> chromossome = findChromosome(data, data->getTrips());
+            cromossomos.push_back(chromossome);
+
+            data->setTrips(copia);
+            copia = makeCopySolution(data, data->getTrips());
+        }
+
+        cout << "-+-+-+-+-+-+-+-+Depois da Mutação+-+-+-+-+-+-+-+-+-+-+\n";
+        // Imprime o score depois dos novos crossovers
+        for (int i = 0; i < populacao.size(); i++)
+        {
+            cout << "[ ";
+            for (int j = 0; j < cromossomos[i].size(); j++)
+            {
+                cout << cromossomos[i][j] << " ";
+            }
+            cout << "]  ";
+            cout << "Score da Solução " << i << ": " << fitnessSolutions[i] << endl;
+        }
+        cout << "-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+\n";
+
 
         /*Gerenciamento da População*/
         vector<Trip **> novaPopulacao;
