@@ -21,6 +21,27 @@ void printCandidatosInsert(vector<tuple<int, int, int, float, float>> candidatos
     }
 }
 
+void printCandidatosMoveBest(vector<tuple<int, int, int, int, int, float>> candidatosGerados)
+{
+    cout << "Candidatos Move Best..." << endl;
+    for (const auto &tupla : candidatosGerados)
+    {
+        int indexTripRemover, indexNoRemover, indexTripAdd, indexAddNo, idxVertxAdd;
+        float descreaseDistanceTour;
+
+        // desempacotando os dados
+        std::tie(indexTripRemover, indexNoRemover, indexTripAdd, indexAddNo, idxVertxAdd, descreaseDistanceTour) = tupla;
+
+        cout << "indexTripRemover " << indexTripRemover << endl;
+        cout << "indexNoRemover " << indexNoRemover << endl;
+        cout << "indexTripAdd " << indexTripAdd << endl;
+        cout << "indexAddNo " << indexAddNo << endl;
+        cout << "idxVertxAdd " << idxVertxAdd << endl;
+        cout << "descreaseDistanceTour: " << descreaseDistanceTour << endl;
+        cout << "-----------------------" << endl;
+    }
+}
+
 //  <indexTrip, indexNoRemover, idVertexAdd, novoScore, novaDistancia>
 bool compare(tuple<int, int, int, float, float> a, tuple<int, int, int, float, float> b)
 {
@@ -751,6 +772,193 @@ Trip **twoOpt(OPHS *data, Trip **solution, mt19937 *gen)
         return solution;
     else
         return solution;
+}
+
+/*
+    Calcula a distancia total desconsiderando a trip pivo
+*/
+float calcDTour(OPHS *data, Trip **solutionCopy, int indexTripPivot)
+{
+    float total = 0;
+    for (int indexTrip = 0; indexTrip < data->getNumTrips(); indexTrip++)
+    {
+        if (indexTrip != indexTripPivot)
+        {
+            total += solutionCopy[indexTrip]->getCurrentLength();
+        }
+    }
+    return total;
+}
+
+/*
+    Encontrar  a melhor posição para o nó pivot
+    solutionCopy não tem o no pivot
+    no pior caso, a melhor posição é a que ele já estava
+
+    Quero saber se adicionando o pivot na solutionCopy, a nova distancia fica menor que tourDistance
+*/
+tuple<int, int, int, int, int, float> findBestPosition(OPHS *data, Trip **solutionCopy, mt19937 *gen, Node pivot, float tourDistance, int indexTripRemover, int indexNoRemover)
+{
+    /*
+        indexTripRemover - index da trip de onde o no vai ser removido
+        indexNoRemover - index na trip do no que vai ser removido
+        indexTripAdd - index da trip onde o no vai ser adicioando
+        indexAddNo - index na trip ondeo o no vai ser adicionado
+        idxVertxAdd - id do no que vai ser adicionado
+        descreaseDistanceTour - decremento da distancia da tour
+    */
+
+    // mantém o melhor candidato para No pivot
+    tuple<int, int, int, int, int, float> melhorCandidato = make_tuple(-1, -1, -1, -1, pivot.id, 0.0);
+
+    for (int indexTrip = 0; indexTrip < data->getNumTrips(); indexTrip++)
+    {
+        vector<Node> nodesTrip = solutionCopy[indexTrip]->getNodes();
+
+        for (int indexNo = 0; indexNo <= nodesTrip.size(); indexNo++)
+        {
+            vector<Node> nodesTripTemp = solutionCopy[indexTrip]->getNodes();
+
+            // insiro o no pivo na posição indexNo e calculo a nova distancia da trip
+            nodesTripTemp.insert(nodesTripTemp.begin() + indexNo, pivot);
+            // printNodes(nodesTripTemp);
+
+            float novaDistancia = calcTripLength(data, solutionCopy[indexTrip]->getStartHotel(), solutionCopy[indexTrip]->getEndHotel(), nodesTripTemp);
+            float newTourDistance = calcDTour(data, solutionCopy, indexTrip) + novaDistancia;
+
+            if (novaDistancia <= solutionCopy[indexTrip]->getTd() && newTourDistance < tourDistance)
+            {
+                // cout << "OLD: " << tourDistance << " NEW: " << newTourDistance << endl;
+                float newDecreaseDistance = tourDistance - newTourDistance;
+
+                if (get<0>(melhorCandidato) == -1)
+                { // primeiro candidato
+                    melhorCandidato = make_tuple(indexTripRemover, indexNoRemover, indexTrip, indexNo, pivot.id, newDecreaseDistance);
+                }
+                else if (newDecreaseDistance > get<5>(melhorCandidato)) // substitui somente se tiver um decremnto maior da distancia da tour
+                {
+                    melhorCandidato = make_tuple(indexTripRemover, indexNoRemover, indexTrip, indexNo, pivot.id, newDecreaseDistance);
+                }
+            }
+        }
+    }
+
+    return melhorCandidato;
+}
+
+Trip **moveBest(OPHS *data, Trip **solution, mt19937 *gen)
+{
+    // pegar os nós que estao na solução
+    // set<int> idsInSolution = getIdsInSolution(data, solution);
+
+    float tourDistance = calcTourLength(data, solution);
+
+    /*
+        indexTripRemover - index da trip de onde o no vai ser removido
+        indexNoRemover - index na trip do no que vai ser removido
+        indexTripAdd - index da trip onde o no vai ser adicioando
+        indexAddNo - index na trip ondeo o no vai ser adicionado
+        idxVertxAdd - id do no que vai ser adicionado
+        descreaseDistanceTour - decremento da distancia da tour
+    */
+    vector<tuple<int, int, int, int, int, float>> candidatosGerados;
+    tuple<int, int, int, int, int, float> melhorCandidato;
+
+    for (int indexTrip = 0; indexTrip < data->getNumTrips(); indexTrip++)
+    {
+        vector<Node> nodesTrip = solution[indexTrip]->getNodes();
+
+        for (int indexNo = 0; indexNo < nodesTrip.size(); indexNo++)
+        {
+            vector<Node> nodesTripTemp = solution[indexTrip]->getNodes();
+            Node pivot = nodesTripTemp[indexNo];
+
+            // cout << "Antes..." << endl;
+            // printNodes(nodesTripTemp);
+
+            // apago o no pivo
+            nodesTripTemp.erase(nodesTripTemp.begin() + indexNo);
+
+            Trip **solutionCopy = makeCopySolution(data, solution);
+            solutionCopy[indexTrip]->setNodes(nodesTripTemp);
+            solutionCopy[indexTrip]->setCurrentLength(calcTripLength(data, solutionCopy[indexTrip]));
+            // cout << "Avaliando o no " << pivot.id << endl;
+
+            melhorCandidato = findBestPosition(data, solutionCopy, gen, pivot, tourDistance, indexTrip, indexNo);
+
+            if (get<0>(melhorCandidato) != -1)
+            {
+                // cout << "Achou candidato.." << endl;
+                candidatosGerados.push_back(melhorCandidato);
+            }
+
+            // cout << "Depois..." << endl;
+            // printNodes(nodesTripTemp);
+        }
+    }
+
+    // ordernar de forma decrescente pelo decreaseDistance
+    std::sort(candidatosGerados.begin(), candidatosGerados.end(),
+              [](const auto &a, const auto &b)
+              {
+                  return std::get<5>(a) > std::get<5>(b);
+              });
+
+    if (candidatosGerados.size() > 0)
+    {
+        // Tentar addicionar os candidatos na solution
+        // Verificar a viabilidade a cada candidato inserido
+        // Se violar, não adicionar e tentar o proximo
+
+        /*
+            indexTripRemover - index da trip de onde o no vai ser removido
+            indexNoRemover - index na trip do no que vai ser removido
+            indexTripAdd - index da trip onde o no vai ser adicioando
+            indexAddNo - index na trip ondeo o no vai ser adicionado
+            idxVertxAdd - id do no que vai ser adicionado
+            descreaseDistanceTour - decremento da distancia da tour
+        */
+        int indexTripRemover = std::get<0>(candidatosGerados[0]);
+        int indexNoRemover = std::get<1>(candidatosGerados[0]);
+        int indexTripAdd = std::get<2>(candidatosGerados[0]);
+        int indexAddNo = std::get<3>(candidatosGerados[0]);
+        int idxVertxAdd = std::get<4>(candidatosGerados[0]);
+        float descreaseDistanceTour = std::get<5>(candidatosGerados[0]);
+        Node noAddTrip = data->getVertex(idxVertxAdd);
+
+        cout << "Trocando o no " << idxVertxAdd 
+                << " - Remover da Trip " << indexTripRemover << " index " << indexNoRemover << 
+                " - Add na Trip " << indexTripAdd << " index " << indexAddNo <<" DescreaseDistanceTour: "<<descreaseDistanceTour<< endl;
+        // cout << "ANTES..." << endl;
+        // printIdsTrips(data, solution);
+
+        // Remover o no da trip e atualizar a solução
+        vector<Node> nodesTripRemover = solution[indexTripRemover]->getNodes();
+
+        nodesTripRemover.erase(nodesTripRemover.begin() + indexNoRemover);
+
+        solution[indexTripRemover]->setNodes(nodesTripRemover);
+        float lengthTrip = calcTripLength(data, solution[indexTripRemover]->getStartHotel(), solution[indexTripRemover]->getEndHotel(), nodesTripRemover);
+        solution[indexTripRemover]->setCurrentLength(lengthTrip);
+
+        // Add o no na trip e atualizar a solução caso seja viável
+        vector<Node> nodesTripAdd = solution[indexTripAdd]->getNodes();
+        nodesTripAdd.insert(nodesTripAdd.begin() + indexAddNo, noAddTrip);
+        lengthTrip = calcTripLength(data, solution[indexTripAdd]->getStartHotel(), solution[indexTripAdd]->getEndHotel(), nodesTripAdd);
+        if (lengthTrip <= solution[indexTripAdd]->getTd())
+        {
+            solution[indexTripAdd]->setNodes(nodesTripAdd);
+            solution[indexTripAdd]->setCurrentLength(lengthTrip);
+            // cout << "DEPOIS..." << endl;
+            // printIdsTrips(data, solution);
+        }
+        else
+        {
+            cout << "Inviavel..." << endl;
+        }
+    }
+
+    return solution;
 }
 
 #endif

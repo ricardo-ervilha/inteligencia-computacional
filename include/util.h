@@ -134,6 +134,18 @@ float calcTripLength(OPHS *data, int startHotel, int endHotel, vector<Node> nos)
     return lengthTrip;
 }
 
+float calcTourLength(OPHS *data, Trip **solution)
+{
+    float lengthTour = 0;
+
+    for (int indexTrip = 0; indexTrip < data->getNumTrips(); indexTrip++)
+    {
+        lengthTour += calcTripLength(data, solution[indexTrip]->getStartHotel(), solution[indexTrip]->getEndHotel(), solution[indexTrip]->getNodes());
+    }
+
+    return lengthTour;
+}
+
 bool isTripFeasible(OPHS *data, Trip *trip)
 {
     float lengthTrip = calcTripLength(data, trip);
