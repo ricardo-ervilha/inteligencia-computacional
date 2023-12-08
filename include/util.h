@@ -221,7 +221,8 @@ void load_solution(string solutionPath, OPHS *data)
     }
     else
     {
-        cout << "Erro ao abrir arquivo " << solutionPath << endl;
+        cout << "Erro ao abrir arquivo solução de saída " << solutionPath << endl;
+        exit(0);
     }
 }
 

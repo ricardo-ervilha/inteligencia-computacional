@@ -3,6 +3,7 @@ project(Trabalho_De_IC)
 
 # Configurações do executável
 add_executable(main apps/main.cpp)
+add_executable(main_automatic apps/main_automatic.cpp)
 
 # Configurações de compilação (opcional)
 set(CMAKE_CXX_STANDARD 17)
@@ -15,9 +16,17 @@ target_sources(main PRIVATE
     include/file_io.h
 )
 
+target_sources(main_automatic PRIVATE
+    include/Node.h
+    include/file_io.h
+)
+
 # Inclua o diretório que contém os cabeçalhos da biblioteca
 target_include_directories(main PRIVATE include)
 target_include_directories(main PRIVATE src)
+
+target_include_directories(main_automatic PRIVATE include)
+target_include_directories(main_automatic PRIVATE src)
 
 include(CTest)
 enable_testing()
