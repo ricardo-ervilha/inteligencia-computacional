@@ -12,7 +12,7 @@ proc.wait()
 # Lista de parâmetros a serem passados para o programa
 pasta_instancias = "../test_instances/"
 # prefixos_desejados = ["SET1", "SET2", "SET3", "SET4", "SET5"]
-prefixos_desejados = ["SET1"]
+prefixos_desejados = ["SET1 1-2"]
 
 def obter_caminhos_arquivos(diretorio, extensao=".ophs"):
     caminhos_arquivos = []
@@ -41,19 +41,56 @@ caminhos_ophs = [caminho.replace("../test_instances/", "") for caminho in caminh
 caminhos_ophs = [caminho.replace(".ophs", "") for caminho in caminhos_ophs]
 caminhos_ophs = sorted(caminhos_ophs)
 
-
-print(f"Numero de instancias: ", len(caminhos_ophs))
-
 parametros = []
 for caminho in caminhos_ophs:
     parametros.append([caminho])
 
-# parametros = [["SET1 1-2/64-45-1-2"]]
+
+tamPopInit = "2"
+percentualCrossOver = "0"
+percentualMutacao = "0"
+gama = "0"
+numGenerations = "1"
+
+parametros = [
+    ["SET1 1-2/64-45-1-2",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
+    ["SET1 1-2/100-35-1-2",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
+    
+    ["SET1 2-3/66-125-2-3",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
+    ["SET1 2-3/102-60-2-3",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
+    
+    ["SET1 3-4/64-70-3-4",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
+    ["SET1 3-4/100-40-3-4",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
+    
+    ["SET2 5-3/100-45-5-3",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
+    
+    ["SET2 6-4/66-50-6-4",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
+    ["SET2 6-4/100-35-6-4",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
+    
+    
+    ["SET3 10-4/66-125-10-4",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
+    ["SET3 10-4/100-200-10-4",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
+    ["SET3 12-5/64-75-12-5",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
+    ["SET3 12-5/100-180-12-5",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
+    
+    ["SET4/102-35-3-3",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
+    ["SET4/102-35-3-3",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations]
+
+]
+
 for parametro in parametros:
+    
     comando = ["./main_automatic"]+parametro
     
-    for i in range(5):# rodar esse numero de vezes para cada instancia
-        proc = subprocess.Popen(comando)
-        proc.wait()# só passar para a próxima iteração quando terminar esse processo
-        time.sleep(1)# aguardar um tempo entre cada execução para não usar sempre a mesma semente
+    # for i in range(5):# rodar esse numero de vezes para cada instancia
+    proc = subprocess.Popen(comando)
+    proc.wait()# só passar para a próxima iteração quando terminar esse processo
+    
+    
+    os.chdir('../')
+    comando_visualize = ["python", "visualize.py", parametro[0], "1"]
+    subprocess.Popen(comando_visualize).wait()
+    os.chdir('./build')
+    
+    time.sleep(1)# aguardar um tempo entre cada execução para não usar sempre a mesma semente
 

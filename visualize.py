@@ -67,18 +67,19 @@ for trip in tour:
 # === PLOT RENDERING ===========================================================
 plt.figure(figsize=(8, 8))
 ax = plt.gca()
-ax.set_facecolor((0.1, 0.1, 0.1))
+# ax.set_facecolor((0.1, 0.1, 0.1))
 for i in range(0, len(x)):
     if score[i] == 0.0:
         if i == 0:
             plt.scatter(x[i], y[i], s = 100, c = "blue") # hotel inicio
         elif i == 1:
-            plt.scatter(x[i], y[i], s = 100, c = "white") # hotel final
+            plt.scatter(x[i], y[i], s = 100, c = "black") # hotel final
         else:
             plt.scatter(x[i], y[i], s = 100, c = "yellow") # outros hotéis
     else:
         col = score[i]/maxScore
-        plt.scatter(x[i], y[i], s = 25 + 25 * col, c = ([0.5*(1 + col), col, col]))
+        color = [0.5 * (1 + col), col, col]
+        plt.scatter(x[i], y[i], s = 40 + 25 * col, color=color)
 for i in range(0, len(tourX)):
     plt.plot(tourX[i], tourY[i], c = ([0.0 + (i / len(tourX)), 0.0, 1.0 - (i / len(tourX))]))
 

@@ -102,10 +102,10 @@ Trip **simulatedAnnealing(OPHS *data, Trip **initialSolution, int iterations, fl
             Trip **copySolution = makeCopySolution(data, initialSolution);
             Trip **neighborSolution;
 
-            neighborSolution = extract2Insert(data, copySolution, gen);
+            neighborSolution = moveBest(data, copySolution, gen);
+            neighborSolution = extract2Insert(data, neighborSolution, gen);
             neighborSolution = applyRandomMovement(data, neighborSolution, gen);
 
-           
             float neighborSolutionScore = getScoreTour(data, neighborSolution);
             float initialSolutionScore = getScoreTour(data, initialSolution);
 

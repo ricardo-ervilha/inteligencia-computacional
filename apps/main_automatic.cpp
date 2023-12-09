@@ -9,7 +9,7 @@ using namespace std;
 
 int main(int argc, char **argv)
 {
-    if (argc != 2)
+    if (argc != 7)
     {
         cout << "Número de parâmetro inválido..." << endl;
         exit(0);
@@ -27,8 +27,8 @@ int main(int argc, char **argv)
     string instance_folder = "../test_instances/";
     string instance_name = argv[1];
     string outputfile = "../out/" + instance_name + ".ophsout";
-    cout <<"Nome da instancia: "<<instance_name<<endl;
-    cout <<"Saida: "<<outputfile<<endl;
+    cout << "Nome da instancia: " << instance_name << endl;
+    cout << "Saida: " << outputfile << endl;
 
     OPHS *data = read_input(instance_folder + instance_name + ".ophs");
 
@@ -37,9 +37,9 @@ int main(int argc, char **argv)
     // Algoritmo construtivo
     //  data->printDadosOPHS();
 
-    greedy_randomized_adaptive_reactive_procedure(data, &gen);
-    writeTrips(data, data->getTrips(), outputfile);
-    
+    // greedy_randomized_adaptive_reactive_procedure(data, &gen);
+    // writeTrips(data, data->getTrips(), outputfile);
+
     // data->printDadosOPHS();
 
     // float scoreInicial = getScoreTour(data, data->getTrips());
@@ -48,43 +48,66 @@ int main(int argc, char **argv)
     //*****************************************************************************
 
     // Parte do Algoritmo Genético
-    //  genetic_algorithm(data, 2, 0.5, 0.25, 0.25, &gen);
+    // Parâmetros Genetico
+    int tamPopInit = stoi(argv[2]);
+    ;
+    float percentualCrossOver = stof(argv[3]);
+    float percentualMutacao = stof(argv[4]);
+    float gama = stof(argv[5]);
+    float numGenerations = stof(argv[6]);
+
+    auto start_genetic = std::chrono::high_resolution_clock::now();
+
+    Trip **best_solution = genetic_algorithm(data, tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations, &gen);
+
+    auto end_genetic = std::chrono::high_resolution_clock::now();
+    auto duration_genetic = std::chrono::duration_cast<std::chrono::milliseconds>(end_genetic - start_genetic);
+
+    data->setTrips(best_solution);
+    writeTrips(data, best_solution, outputfile);
+    data->printDadosOPHS();
+    float scoreGenetic = getScoreTour(data, data->getTrips());
+    cout << "Score da Best Solution pós genético: " << scoreGenetic << endl;
 
     //*****************************************************************************
 
     // Carregando uma solução gravada na pasta out, caso não exista, cria uma
     // load_solution(outputfile, data));
 
-
     // Parte do Simulated Annealing
     int iteracoes = 100;
     float temperaturaInicial = 100;
     float temperaturaFinal = 0.01;
+    Trip **solucaoInicial = data->getTrips();
 
-    // cout << "Entrando no SA" << endl;
-    // data->printDadosOPHS();
-    // Trip **novaSolucao = simulatedAnnealing(data, data->getTrips(), iteracoes, temperaturaInicial, temperaturaFinal, &gen);
-    // data->setTrips(novaSolucao);
-    
-    // auto end = std::chrono::high_resolution_clock::now();
-    // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    // std::cout << "Tempo decorrido: " << duration.count() << " ms" << std::endl;
+    auto start_sa = std::chrono::high_resolution_clock::now();
 
-    // writeTrips(data, data->getTrips(), outputfile);
+    Trip **novaSolucao = simulatedAnnealing(data, solucaoInicial, iteracoes, temperaturaInicial, temperaturaFinal, &gen);
 
-    // // data->printDadosOPHS();
+    auto end_sa = std::chrono::high_resolution_clock::now();
+    auto duration_sa = std::chrono::duration_cast<std::chrono::milliseconds>(end_sa - start_sa);
+    auto duration_total = duration_genetic.count() + duration_sa.count();
 
-    // float scoreFinal = getScoreTour(data, novaSolucao);
-    // cout << "+ Score Final do passeio: " << scoreFinal << endl;
+    data->setTrips(novaSolucao);
+    writeTrips(data, novaSolucao, outputfile);
+    data->printDadosOPHS();
 
-    // cout << "Melhora de : " << ((scoreFinal / scoreInicial) - 1) * 100 << " %" << endl;
+    float scoreFinal = getScoreTour(data, novaSolucao);
+    cout << "+ Score Final do passeio: " << scoreFinal << endl;
 
-    // writeTrips(data, solucaoInicial, outputfile);
+    string filename = "../out/metrics.csv";
+    std::ofstream outputFile(filename, std::ofstream::app);
 
-    // string filename = "saida.txt";
-    // std::ofstream outputFile(filename, std::ofstream::app);
-    // outputFile << instance_name<<"\t"<<scoreFinal<<"\t"<<duration.count()<<endl;
-    // outputFile.close();
+    outputFile << instance_name << "," <<  // nome_instancia
+        seed << "," <<                     // Semente 1
+        val << "," <<                      // Semente 2
+        scoreGenetic << "," <<             // Score Genetic
+        duration_genetic.count() << "," << // Tempo Genetic
+        scoreFinal << "," <<               // Score SA
+        duration_sa.count() << "," <<      // Tempo SA
+        duration_total <<                  // Tempo total
+        endl;
+    outputFile.close();
 
     return 0;
 }
