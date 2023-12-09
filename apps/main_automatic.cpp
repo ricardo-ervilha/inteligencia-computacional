@@ -26,7 +26,8 @@ int main(int argc, char **argv)
     // Parte de leitura da instância
     string instance_folder = "../test_instances/";
     string instance_name = argv[1];
-    string outputfile = "../out/" + instance_name + ".ophsout";
+    string outputfile = "../out/" + instance_name + ".ophsoutSA";// solução final do SA
+    string outputfile_ga = "../out/" + instance_name + ".ophsoutGA"; // solução do GA
     cout << "Nome da instancia: " << instance_name << endl;
     cout << "Saida: " << outputfile << endl;
 
@@ -64,7 +65,7 @@ int main(int argc, char **argv)
     auto duration_genetic = std::chrono::duration_cast<std::chrono::milliseconds>(end_genetic - start_genetic);
 
     data->setTrips(best_solution);
-    writeTrips(data, best_solution, outputfile);
+    writeTrips(data, best_solution, outputfile_ga);
     data->printDadosOPHS();
     float scoreGenetic = getScoreTour(data, data->getTrips());
     cout << "Score da Best Solution pós genético: " << scoreGenetic << endl;

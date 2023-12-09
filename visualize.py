@@ -15,13 +15,14 @@ import matplotlib.pyplot as plt
 # === ARGUMENT HANDLING ========================================================
 fileName = sys.argv[1]
 save = int(sys.argv[2])
+alg = sys.argv[3]
 
 # === FILE READING =============================================================
 fin = open("instances/OPHS_instances_February 2013/" + fileName + ".ophs", 'r', 1)
 instancesF = fin.read()
 fin.close()
 
-fin = open("out/" + fileName + ".ophsout", 'r', 1)
+fin = open("out/" + fileName + ".ophsout"+alg, 'r', 1)
 tourF = fin.read()
 fin.close()
 
@@ -57,17 +58,19 @@ for line in tourF.splitlines():
 
 tourX = []
 tourY = []
+totalScore = 0
 for trip in tour:
     tourX.append([])
     tourY.append([])
     for node in trip:
         tourX[-1].append(x[node])
         tourY[-1].append(y[node])
+        totalScore += score[node]
 
 # === PLOT RENDERING ===========================================================
 plt.figure(figsize=(8, 8))
 ax = plt.gca()
-plt.title(fileName)
+plt.title(fileName + " - Score: "+str(totalScore))
 # ax.set_facecolor((0.1, 0.1, 0.1))
 extra_hotels = 0
 for i in range(0, len(x)):
@@ -89,6 +92,6 @@ for i in range(0, len(tourX)):
 plt.scatter([], [], s=100, c="yellow", label="Hotéis Extras: "+str(extra_hotels))  # Para que o label dos outros hoteis so apareça uma vez
 plt.legend(markerscale=0.5)
 if save:
-    plt.savefig("out/" + fileName + ".png", bbox_inches='tight')
+    plt.savefig("out/" + fileName + "_"+alg+".png", bbox_inches='tight')
 else:
     plt.show()

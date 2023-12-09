@@ -926,9 +926,9 @@ Trip **moveBest(OPHS *data, Trip **solution, mt19937 *gen)
         float descreaseDistanceTour = std::get<5>(candidatosGerados[0]);
         Node noAddTrip = data->getVertex(idxVertxAdd);
 
-        cout << "Trocando o no " << idxVertxAdd 
-                << " - Remover da Trip " << indexTripRemover << " index " << indexNoRemover << 
-                " - Add na Trip " << indexTripAdd << " index " << indexAddNo <<" DescreaseDistanceTour: "<<descreaseDistanceTour<< endl;
+        // cout << "Trocando o no " << idxVertxAdd 
+        //         << " - Remover da Trip " << indexTripRemover << " index " << indexNoRemover << 
+        //         " - Add na Trip " << indexTripAdd << " index " << indexAddNo <<" DescreaseDistanceTour: "<<descreaseDistanceTour<< endl;
         // cout << "ANTES..." << endl;
         // printIdsTrips(data, solution);
 

@@ -88,8 +88,12 @@ for parametro in parametros:
     
     
     os.chdir('../')
-    comando_visualize = ["python", "visualize.py", parametro[0], "1"]
+    comando_visualize = ["python", "visualize.py", parametro[0], "1", "GA"] # plotar solução do GA
     subprocess.Popen(comando_visualize).wait()
+    
+    comando_visualize = ["python", "visualize.py", parametro[0], "1", "SA"] # plotar solução do SA
+    subprocess.Popen(comando_visualize).wait()
+    
     os.chdir('./build')
     
     time.sleep(1)# aguardar um tempo entre cada execução para não usar sempre a mesma semente
