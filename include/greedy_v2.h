@@ -129,8 +129,6 @@ void find_hotels_combination(OPHS* data, mt19937 *gen){
         }
     }
 
-    print_matrix(data, matrix);
-
     data->setMatrix(matrix);
 
     vector<vector<int>> hotels = mount_feasible_possibilities(data, matrix);
@@ -145,16 +143,6 @@ void find_hotels_combination(OPHS* data, mt19937 *gen){
         data->getTrip(cont)->setEndHotel(hotels[randomPossibilityIndex][cont+1]);
         cont++;
     }
-
-    //Deleção da matriz (Deixar comentado pois usa no genético)
-    // for (int i = 0; i < data->getNumExtraHotels() + 2; i++) {
-    //     for (int j = 0; j < data->getNumExtraHotels() + 2; j++) {
-    //         delete[] matrix[i][j];
-    //     }
-    //     delete[] matrix[i];
-    // }
-
-    // delete[] matrix;
 }
 
 /* Abordagem Construtiva */

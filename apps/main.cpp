@@ -19,7 +19,7 @@ int main()
 
     // Parte de leitura da instância
     string instance_folder = "../instances/OPHS_instances_February 2013/";
-    string instance_name = "SET1 3-4/64-70-3-4";
+    string instance_name = "SET2 5-3/100-45-5-3";
     string outputfile = "../out/" + instance_name + ".ophsout";
 
     OPHS *data = read_input(instance_folder + instance_name + ".ophs");
@@ -39,27 +39,28 @@ int main()
     //*****************************************************************************
 
     //Parte do Algoritmo Genético
-    genetic_algorithm(data, 2, 0.5, 0.25, 0.25, &gen);
+    Trip** best_solution = genetic_algorithm(data, 2, 0, 0, 0, 1, &gen);
+    
+    data->setTrips(best_solution);
+    data->printDadosOPHS();
+    cout << "Score da Best Solution pós genético: " << getScoreTour(data, data->getTrips()) << endl;
 
     //*****************************************************************************
 
     // Parte do Simulated Annealing
-    // int iteracoes = 100;
-    // float temperaturaInicial = 100;
-    // float temperaturaFinal = 0.01;
-    // Trip **solucaoInicial = data->getTrips();
+    int iteracoes = 100;
+    float temperaturaInicial = 100;
+    float temperaturaFinal = 0.01;
+    Trip **solucaoInicial = data->getTrips();
 
-    // Trip **novaSolucao = simulatedAnnealing(data, solucaoInicial, iteracoes, temperaturaInicial, temperaturaFinal, &gen);
-    // auto end = std::chrono::high_resolution_clock::now();
-    // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    // std::cout << "Tempo decorrido: " << duration.count() << " ms" << std::endl;
-
+    Trip **novaSolucao = simulatedAnnealing(data, solucaoInicial, iteracoes, temperaturaInicial, temperaturaFinal, &gen);
+    
     // writeTrips(data, solucaoInicial, outputfile);
 
-    // // data->printDadosOPHS();
+    data->printDadosOPHS();
 
-    // float scoreFinal = getScoreTour(data, novaSolucao);
-    // cout << "+ Score Final do passeio: " << scoreFinal << endl;
+    float scoreFinal = getScoreTour(data, novaSolucao);
+    cout << "+ Score Final do passeio: " << scoreFinal << endl;
 
     // cout << "Melhora de : " << ((scoreFinal / scoreInicial) - 1) * 100 << " %" << endl;
 
