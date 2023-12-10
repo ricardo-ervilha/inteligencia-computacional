@@ -132,10 +132,16 @@ void find_hotels_combination(OPHS* data, mt19937 *gen){
     data->setMatrix(matrix);
 
     vector<vector<int>> hotels = mount_feasible_possibilities(data, matrix);
+
+    data->setHoteisFeasible(hotels);
     
+}
+
+void preencheCombinacaoAleatoria(OPHS *data, mt19937* gen){
+    vector<vector<int>> hotels = data->getHoteisFeasible();
+
     int randomPossibilityIndex = intRandom(0, hotels.size() - 1, gen);
     cout << "Indice da combinacao: " << randomPossibilityIndex << endl;
-
 
     int cont = 0;
     while(cont < data->getNumTrips()){
@@ -338,7 +344,7 @@ void atualizaProbabilidades(float *q, float *probabilidades, int tamAlfa){
 void greedy_randomized_adaptive_reactive_procedure(OPHS *data, mt19937 *gen)
 {   
     
-    find_hotels_combination(data, gen); //preenche o tour com os hoteis iniciais.
+    preencheCombinacaoAleatoria(data, gen); //preenche o tour com os hoteis iniciais.
 
     Trip **copia = makeCopySolution(data, data->getTrips());
     Trip **melhor;

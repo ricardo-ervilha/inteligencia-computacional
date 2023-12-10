@@ -68,9 +68,11 @@ public:
     
     int getScoreTrip() {
         int totalScore = 0;
+
         for(int i = 0; i < nodes.size(); i++){
             totalScore += nodes[i].score;
         }
+        
         return totalScore;
     }
     

@@ -5,6 +5,7 @@
 #include <cstring>
 #include <random>
 #include <set>
+#include <omp.h>
 
 using namespace std;
 
@@ -53,6 +54,7 @@ Trip **makeCopySolution(OPHS *data, Trip **initialSolution)
     Trip **copyTrips = new Trip *[data->getNumTrips()];
 
     // inicializar as trips
+
     for (int i = 0; i < data->getNumTrips(); i++)
     {
 

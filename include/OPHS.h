@@ -17,6 +17,7 @@ private:
     float **d_matrix; //Matriz com distâncias
 
     bool ***matrix; //Matriz de viabilidade dos hoteis.
+    vector<vector<int>> hotelsFeasible; //Lista de combinação de hoteis possíveis.
 
 public:
     OPHS(int numVertices, int numExtraHotels, int numTrips, float totalTourLength, Node* vertex, float **d_matrix, Trip **trips){
@@ -54,6 +55,14 @@ public:
 
     bool*** getMatrix(){
         return this->matrix;
+    }
+
+    void setHoteisFeasible(vector<vector<int>> hotelsFeasible){
+        this->hotelsFeasible = hotelsFeasible;
+    }
+
+    vector<vector<int>> getHoteisFeasible(){
+        return this->hotelsFeasible;
     }
     
     void printDadosOPHS(){

@@ -4,6 +4,8 @@
 #include "../include/greedy_v2.h"
 #include "util.h"
 #include "simulated_annealing.h"
+#include <chrono>
+#include <iomanip>
 
 using namespace std;
 
@@ -19,7 +21,7 @@ int main()
 
     // Parte de leitura da instância
     string instance_folder = "../instances/OPHS_instances_February 2013/";
-    string instance_name = "SET2 5-3/100-45-5-3";
+    string instance_name = "SET1 3-4/64-70-3-4";
     string outputfile = "../out/" + instance_name + ".ophsout";
 
     OPHS *data = read_input(instance_folder + instance_name + ".ophs");
@@ -39,8 +41,25 @@ int main()
     //*****************************************************************************
 
     //Parte do Algoritmo Genético
-    Trip** best_solution = genetic_algorithm(data, 2, 0, 0, 0, 1, &gen);
+    find_hotels_combination(data, &gen); //Acha todas as possíveis combinações
+
+    auto start = chrono::high_resolution_clock::now();
+
+    Trip** best_solution = genetic_algorithm(data, 6, 0.5, 0.5, 0.85, 6, &gen);
+
+    auto end = chrono::high_resolution_clock::now();
+
+    double time_taken = 
+      chrono::duration_cast<chrono::nanoseconds>(end - start).count();
+ 
+    time_taken *= 1e-9;
+ 
+    cout << "Time taken by program is : " << fixed 
+         << time_taken << setprecision(9);
+    cout << " sec" << endl;
     
+    cout << defaultfloat;
+
     data->setTrips(best_solution);
     data->printDadosOPHS();
     cout << "Score da Best Solution pós genético: " << getScoreTour(data, data->getTrips()) << endl;
