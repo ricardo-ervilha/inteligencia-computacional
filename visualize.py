@@ -92,6 +92,6 @@ for i in range(0, len(tourX)):
 plt.scatter([], [], s=100, c="yellow", label="Hotéis Extras: "+str(extra_hotels))  # Para que o label dos outros hoteis so apareça uma vez
 plt.legend(markerscale=0.5)
 if save:
-    plt.savefig("out/" + fileName + "_"+alg+".png", bbox_inches='tight')
+    plt.savefig("out/" + fileName + "_"+alg+".svg", bbox_inches='tight')
 else:
     plt.show()
