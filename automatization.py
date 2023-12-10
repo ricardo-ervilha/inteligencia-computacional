@@ -53,48 +53,53 @@ gama = "0"
 numGenerations = "1"
 
 parametros = [
-    ["SET1 1-2/64-45-1-2",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
-    ["SET1 1-2/100-35-1-2",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
+
+    ["SET1 1-2/64-45-1-2", "4", "0.5", "0.8", "1.", "8"],
+    ["SET1 1-2/100-35-1-2", "1", "0", "0", "1.", "1."],
     
-    ["SET1 2-3/66-125-2-3",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
-    ["SET1 2-3/102-60-2-3",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
+    ["SET1 2-3/66-125-2-3", "4", "0.4", "0.7", "0.95", "5"],
+    ["SET1 2-3/102-60-2-3", "6", "0.5", "0.7", "1.", "10"],
     
-    ["SET1 3-4/64-70-3-4",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
-    ["SET1 3-4/100-40-3-4",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
+    ["SET1 3-4/64-70-3-4", "6", "0.5", "0.7", "0.9", "6"],
+    ["SET1 3-4/100-40-3-4", "1", "0.0", "0.", "1.", "1"],
     
-    ["SET2 5-3/100-45-5-3",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
+    ["SET2 5-3/66-60-5-3", "6", "0.6", "0.7", "0.95", "6"],
+    ["SET2 5-3/100-45-5-3", "3", "0.6", "0.7", "0.95", "3"],
     
-    ["SET2 6-4/66-50-6-4",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
-    ["SET2 6-4/100-35-6-4",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
+    ["SET2 6-4/66-50-6-4", "8", "0.8", "0.7", "0.95", "8"],
+    ["SET2 6-4/100-35-6-4", "1", "0.0", "0.0", "0.0", "1"],
     
+    ["SET3 10-4/66-125-10-4", "6", "0.8", "0.7", "0.8", "5"],
+    ["SET3 10-4/100-200-10-4", "5", "0.8", "0.7", "0.8", "5"],
     
-    ["SET3 10-4/66-125-10-4",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
-    ["SET3 10-4/100-200-10-4",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
-    ["SET3 12-5/64-75-12-5",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
-    ["SET3 12-5/100-180-12-5",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
+    ["SET3 12-5/64-75-12-5", "10", "0.8", "0.4", "0.8", "6"],
+    ["SET3 12-5/100-180-12-5", "9", "0.8", "0.5", "0.8", "5"],
     
-    ["SET4/102-35-3-3",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations],
-    ["SET4/102-35-3-3",  tamPopInit, percentualCrossOver, percentualMutacao, gama, numGenerations]
+    ["SET4/100-20-3-3", "7", "0.8", "0.5", "0.8", "5"],
+    ["SET4/100-25-3-3", "7", "0.8", "0.5", "0.8", "8"],
+    ["SET4/102-35-3-3", "5", "0.8", "0.5", "0.9", "8"],
+    ["SET4/102-40-3-3", "5", "0.8", "0.5", "0.9", "8"],
+    ["SET4/102-45-3-3", "5", "0.8", "0.5", "0.9", "8"],
 
 ]
 
 for parametro in parametros:
     
     comando = ["./main_automatic"]+parametro
-    
-    # for i in range(5):# rodar esse numero de vezes para cada instancia
-    proc = subprocess.Popen(comando)
-    proc.wait()# só passar para a próxima iteração quando terminar esse processo
-    
-    
-    os.chdir('../')
-    comando_visualize = ["python", "visualize.py", parametro[0], "1", "GA"] # plotar solução do GA
-    subprocess.Popen(comando_visualize).wait()
-    
-    comando_visualize = ["python", "visualize.py", parametro[0], "1", "SA"] # plotar solução do SA
-    subprocess.Popen(comando_visualize).wait()
-    
-    os.chdir('./build')
-    
-    time.sleep(1)# aguardar um tempo entre cada execução para não usar sempre a mesma semente
+
+    for i in range(10):# rodar esse numero de vezes para cada instancia
+        proc = subprocess.Popen(comando)
+        proc.wait()# só passar para a próxima iteração quando terminar esse processo
+        
+        
+        os.chdir('../')
+        comando_visualize = ["python3", "visualize.py", parametro[0], "1", "GA"] # plotar solução do GA
+        subprocess.Popen(comando_visualize).wait()
+        
+        comando_visualize = ["python3", "visualize.py", parametro[0], "1", "SA"] # plotar solução do SA
+        subprocess.Popen(comando_visualize).wait()
+        
+        os.chdir('./build')
+        
+        time.sleep(1)# aguardar um tempo entre cada execução para não usar sempre a mesma semente
 
